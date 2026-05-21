@@ -473,12 +473,13 @@ function renderCalendar(scheduleMap) {
       const plat = it.platform === 'youtube' ? 'YT' : it.platform === 'tiktok' ? 'TT' : 'IG';
       const t = (it.time || '').slice(0, 5);
       const title = escapeHtml((it.title || '').replace(/^\[[^\]]+\]\s*·?\s*/, ''));
+      const ep = it.ep_number ? ` EP ${it.ep_number}` : '';
       const repeat = it.repeat_group_id ? '<span class="ci-repeat" title="Repeats">↻</span>' : '';
       const stat = it.status || '';
-      return `<div class="cal-item ${cls} ${stat}" title="${escapeHtml(it.title||'')}">
+      return `<div class="cal-item ${cls} ${stat}" title="${escapeHtml(it.title||'')}${ep}">
         <span class="ci-time">${t}</span>
         <span class="ci-plat ${cls}">${plat}</span>
-        <span class="ci-title">${title}</span>
+        <span class="ci-title">${title}${ep}</span>
         ${repeat}
       </div>`;
     }).join('');
@@ -519,7 +520,7 @@ function renderTodayPlan(items) {
         <div class="t-time">${it.time || ''}</div>
         <div class="t-dot ${cls}"></div>
         <div class="t-body">
-          <h4>${escapeHtml(it.title || 'Untitled')}</h4>
+          <h4>${escapeHtml(it.title || 'Untitled')}${it.ep_number ? ` <span style="color:var(--text-2);font-weight:500">EP ${it.ep_number}</span>` : ''}</h4>
           ${sub ? `<p>${escapeHtml(sub)}</p>` : ''}
           ${it.format ? `<p class="muted" style="margin-top:2px">Format: <b style="color:var(--text-2)">${it.format}</b></p>` : ''}
         </div>
@@ -1771,6 +1772,7 @@ function renderSeriesRows() {
     const i = parseInt(rowEl.dataset.idx, 10);
     rowEl.querySelector('.sr-name')?.addEventListener('input', e => _seriesState.rows[i].name = e.target.value);
     rowEl.querySelector('.sr-format')?.addEventListener('change', e => _seriesState.rows[i].format = e.target.value);
+    rowEl.querySelector('.sr-platform')?.addEventListener('change', e => _seriesState.rows[i].platform = e.target.value);
     rowEl.querySelector('.sr-time')?.addEventListener('change', e => _seriesState.rows[i].post_time = e.target.value);
     rowEl.querySelector('.sr-repeat')?.addEventListener('change', e => {
       _seriesState.rows[i].repeat_weeks = parseInt(e.target.value, 10);
@@ -1802,10 +1804,16 @@ function seriesRowHtml(r, i) {
   const fmtOpts = FORMAT_CHOICES.map(f =>
     `<option value="${f.value}" ${f.value === r.format ? 'selected' : ''}>${f.label}</option>`
   ).join('');
+  const platOpts = [
+    { value: 'tiktok', label: 'TikTok' },
+    { value: 'youtube', label: 'YouTube' },
+    { value: 'instagram', label: 'Instagram' }
+  ].map(p => `<option value="${p.value}" ${p.value === r.platform ? 'selected' : ''}>${p.label}</option>`).join('');
   return `
     <div class="series-row" data-idx="${i}">
       <input type="text" class="sr-name" placeholder="Series name" value="${escapeAttr(r.name)}" />
       <select class="sr-format">${fmtOpts}</select>
+      <select class="sr-platform">${platOpts}</select>
       <div class="weekday-pickers">${wdHtml}</div>
       <input type="time" class="sr-time" value="${r.post_time || '20:00'}" />
       <select class="sr-repeat">

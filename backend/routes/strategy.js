@@ -106,19 +106,28 @@ r.post('/strategy/:period/materialize', (req, res) => {
 });
 
 // -------- content plan --------
+function attachEpNumbers(rows) {
+  const seriesIds = [...new Set(rows.filter(r => r.series_id).map(r => r.series_id))];
+  if (!seriesIds.length) return rows;
+  const epIndex = {};
+  for (const sid of seriesIds) {
+    stmts.planBySeries.all(sid).forEach((item, idx) => { epIndex[item.id] = idx + 1; });
+  }
+  return rows.map(row => ({ ...row, ep_number: row.series_id ? (epIndex[row.id] ?? null) : null }));
+}
+
 r.get('/content-plan', (req, res) => {
-  if (req.query.date) return res.json(stmts.contentPlanByDate.all(req.query.date));
+  if (req.query.date) {
+    return res.json(attachEpNumbers(stmts.contentPlanByDate.all(req.query.date)));
+  }
   const from = req.query.from || new Date().toISOString().slice(0,10);
   const to   = req.query.to   || new Date(Date.now() + 60*86400000).toISOString().slice(0,10);
-  const rows = stmts.contentPlanRange.all(from, to);
+  const rows = attachEpNumbers(stmts.contentPlanRange.all(from, to));
   // group by date
   const map = {};
   for (const row of rows) {
     if (!map[row.date]) map[row.date] = [];
-    map[row.date].push({
-      ...row,
-      outline: safeJson(row.outline)
-    });
+    map[row.date].push({ ...row, outline: safeJson(row.outline) });
   }
   res.json(map);
 });

@@ -1651,7 +1651,7 @@ button { font-family: var(--sans); cursor: pointer; border: 0; }
 
 .series-table-head, .series-row {
   display: grid;
-  grid-template-columns: 1.8fr 1fr 2fr 0.9fr 0.9fr 36px;
+  grid-template-columns: 1.6fr 0.9fr 0.75fr 2fr 0.85fr 0.85fr 36px;
   gap: 10px; align-items: center;
 }
 .series-table-head {
