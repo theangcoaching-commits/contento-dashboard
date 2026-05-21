@@ -321,6 +321,32 @@ try { db.exec("ALTER TABLE content_plan ADD COLUMN repeat_rule TEXT");     } cat
 try { db.exec("ALTER TABLE my_ideas ADD COLUMN docs_url TEXT"); } catch {}
 try { db.exec("ALTER TABLE my_ideas ADD COLUMN docs_kind TEXT"); } catch {}  // 'doc' | 'sheet' | 'slide' | 'figma' | 'notion' | 'other'
 
+// Content series — weekday-distributed posting series (e.g. "Building ANG CONSULTING" on Mondays for 4 weeks)
+db.exec(`
+  CREATE TABLE IF NOT EXISTS content_series (
+    id            TEXT PRIMARY KEY,
+    name          TEXT NOT NULL,
+    platform      TEXT NOT NULL,       -- youtube | tiktok | instagram
+    goal_text     TEXT,                -- "1M views on TikTok Tuwi NG"
+    target_views  INTEGER DEFAULT 0,
+    weekdays      TEXT NOT NULL,       -- JSON array of ints 0..6 (0=Sun, 1=Mon, ..., 6=Sat)
+    repeat_weeks  INTEGER DEFAULT 4,
+    start_date    TEXT NOT NULL,       -- YYYY-MM-DD
+    post_time     TEXT DEFAULT '20:00',
+    format        TEXT,
+    hook_template TEXT,
+    color         TEXT DEFAULT '#a78bfa',
+    status        TEXT DEFAULT 'active', -- active | paused | done
+    notes         TEXT,
+    created_at    TEXT,
+    updated_at    TEXT
+  );
+  CREATE INDEX IF NOT EXISTS idx_series_status ON content_series(status);
+`);
+
+// Link content_plan rows to their generating series
+try { db.exec("ALTER TABLE content_plan ADD COLUMN series_id TEXT"); } catch {}
+
 // seed default profile row if empty
 const hasProfile = db.prepare('SELECT 1 FROM profile WHERE id = 1').get();
 if (!hasProfile) {
@@ -441,10 +467,10 @@ export const stmts = {
   insertContentPlan: db.prepare(`
     INSERT INTO content_plan (id, date, time, platform, format, title, hook, outline, script, cta,
                               target_views, target_leads, status, week_idx, repeat_group_id, repeat_rule,
-                              campaign_id, created_at, updated_at)
+                              campaign_id, series_id, created_at, updated_at)
     VALUES (@id, @date, @time, @platform, @format, @title, @hook, @outline, @script, @cta,
             @target_views, @target_leads, @status, @week_idx, @repeat_group_id, @repeat_rule,
-            @campaign_id, @created_at, @updated_at)
+            @campaign_id, @series_id, @created_at, @updated_at)
   `),
   updateContentPlan: db.prepare(`
     UPDATE content_plan SET
@@ -603,6 +629,30 @@ export const stmts = {
   prospectsByStatus: db.prepare('SELECT * FROM prospects WHERE status = ? ORDER BY created_at DESC'),
   deleteProspect:    db.prepare('DELETE FROM prospects WHERE id = ?'),
   prospectsDueFollowup: db.prepare(`SELECT * FROM prospects WHERE next_followup_at IS NOT NULL AND next_followup_at <= ? AND status NOT IN ('signed','dropped') ORDER BY next_followup_at ASC`),
+
+  // Content series
+  insertSeries: db.prepare(`
+    INSERT INTO content_series (id, name, platform, goal_text, target_views,
+                                weekdays, repeat_weeks, start_date, post_time, format, hook_template,
+                                color, status, notes, created_at, updated_at)
+    VALUES (@id, @name, @platform, @goal_text, @target_views,
+            @weekdays, @repeat_weeks, @start_date, @post_time, @format, @hook_template,
+            @color, @status, @notes, @created_at, @updated_at)
+  `),
+  updateSeries: db.prepare(`
+    UPDATE content_series SET
+      name=@name, platform=@platform, goal_text=@goal_text, target_views=@target_views,
+      weekdays=@weekdays, repeat_weeks=@repeat_weeks, start_date=@start_date,
+      post_time=@post_time, format=@format, hook_template=@hook_template,
+      color=@color, status=@status, notes=@notes, updated_at=@updated_at
+    WHERE id=@id
+  `),
+  getSeries:        db.prepare('SELECT * FROM content_series WHERE id = ?'),
+  allSeries:        db.prepare('SELECT * FROM content_series ORDER BY status, created_at DESC'),
+  seriesByPlatform: db.prepare('SELECT * FROM content_series WHERE platform = ? ORDER BY status, created_at DESC'),
+  deleteSeries:     db.prepare('DELETE FROM content_series WHERE id = ?'),
+  deletePlanBySeries: db.prepare('DELETE FROM content_plan WHERE series_id = ?'),
+  planBySeries:     db.prepare('SELECT * FROM content_plan WHERE series_id = ? ORDER BY date, time'),
 
   // Aggregate campaign performance
   campaignStats: db.prepare(`

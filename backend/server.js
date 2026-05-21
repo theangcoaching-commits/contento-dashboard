@@ -21,6 +21,7 @@ import driveRouter from './routes/drive.js';
 import applicationsRouter from './routes/applications.js';
 import contentoDriveRouter from './routes/contento-drive.js';
 import sopsRouter from './routes/sops.js';
+import seriesRouter from './routes/series.js';
 import { syncAll } from './services/sync.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -49,6 +50,7 @@ app.use('/api',      driveRouter);
 app.use('/api',      applicationsRouter);
 app.use('/api',      contentoDriveRouter);
 app.use('/api',      sopsRouter);
+app.use('/api',      seriesRouter);
 app.use('/api',      apiRouter);
 
 app.get('/api/health', (req, res) => res.json({ ok: true, ts: Date.now() }));

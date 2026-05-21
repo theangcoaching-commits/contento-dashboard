@@ -7,7 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="styles.css?v=24" />
+  <link rel="stylesheet" href="styles.css?v=25" />
 </head>
 <body>
 
@@ -128,6 +128,7 @@
     <section class="view" id="view-strategy">
       <div class="subtab-bar">
         <button class="subtab active" data-subtab="strat-funnel"><i class="lucide-target"></i> Funnel strategy</button>
+        <button class="subtab" data-subtab="strat-series"><i class="lucide-calendar-days"></i> Series planner</button>
         <button class="subtab" data-subtab="strat-campaigns"><i class="lucide-film"></i> Campaigns</button>
       </div>
 
@@ -328,6 +329,88 @@
         <div class="formats-grid" id="formatsGrid"></div>
       </div>
       </div><!-- /strat-funnel subpanel -->
+
+      <!-- SUBPANEL: SERIES PLANNER -->
+      <div class="subpanel" id="strat-series">
+        <div class="card big-card series-hero">
+          <div>
+            <span class="card-eyebrow">Weekday-distributed content series</span>
+            <h2 class="big-amount">Series planner · phân bố lịch đăng theo ngày trong tuần</h2>
+            <p class="muted">Ví dụ: <b>Building ANG CONSULTING</b> đăng Thứ 2 lặp lại 1 tháng. <b>Học 30 kỹ năng</b> đăng Thứ 3-5-7. Tự động sinh slots trong content_plan.</p>
+          </div>
+        </div>
+
+        <!-- Strategy header: goal + platform + duration -->
+        <div class="card big-card series-strategy">
+          <div class="big-head">
+            <div>
+              <h3 class="card-title">Strategy</h3>
+              <span class="card-eyebrow">North-star goal cho khối series này</span>
+            </div>
+          </div>
+          <div class="series-strategy-grid">
+            <div class="field-col" style="grid-column:1/-1">
+              <label>Mục tiêu (strategy content)</label>
+              <input type="text" id="sp-goal" placeholder="VD: giúp tôi đạt 1M views trên TikTok Tuwi NG" />
+            </div>
+            <div class="field-col">
+              <label>Nền tảng</label>
+              <select id="sp-platform">
+                <option value="tiktok" selected>TikTok</option>
+                <option value="youtube">YouTube</option>
+                <option value="instagram">Instagram</option>
+              </select>
+            </div>
+            <div class="field-col">
+              <label>Bắt đầu</label>
+              <input type="date" id="sp-start" />
+            </div>
+            <div class="field-col">
+              <label>Thời gian</label>
+              <select id="sp-weeks">
+                <option value="1">1 tuần</option>
+                <option value="2">2 tuần</option>
+                <option value="4" selected>1 tháng</option>
+                <option value="8">2 tháng</option>
+                <option value="12">3 tháng</option>
+                <option value="24">6 tháng</option>
+              </select>
+            </div>
+            <div class="field-col">
+              <label>Total target views</label>
+              <input type="number" id="sp-target-views" placeholder="1000000" />
+            </div>
+          </div>
+        </div>
+
+        <!-- Series rows -->
+        <div class="card big-card">
+          <div class="big-head">
+            <div>
+              <h3 class="card-title">Series · phân bố lịch</h3>
+              <span class="card-eyebrow">Tick các ngày trong tuần · mỗi series sẽ sinh slot tự động trong Schedule</span>
+            </div>
+            <div style="display:flex;gap:8px">
+              <button class="btn-pill" id="sp-template"><i class="lucide-sparkles"></i> Use Tuwi NG template</button>
+              <button class="btn-pill" id="sp-add"><i class="lucide-plus"></i> Add series</button>
+              <button class="btn-pill primary" id="sp-materialize"><i class="lucide-calendar-plus"></i> Push to Schedule</button>
+            </div>
+          </div>
+
+          <div class="series-table-head">
+            <div>Series name</div>
+            <div>Format</div>
+            <div class="weekday-head">
+              <span title="Sun">CN</span><span title="Mon">T2</span><span title="Tue">T3</span><span title="Wed">T4</span><span title="Thu">T5</span><span title="Fri">T6</span><span title="Sat">T7</span>
+            </div>
+            <div>Time</div>
+            <div>Repeat</div>
+            <div></div>
+          </div>
+          <div class="series-list" id="sp-list"></div>
+          <p class="muted small" id="sp-summary" style="margin-top:12px"></p>
+        </div>
+      </div><!-- /strat-series subpanel -->
 
       <!-- SUBPANEL: CAMPAIGNS -->
       <div class="subpanel" id="strat-campaigns">
@@ -1068,8 +1151,8 @@
   <div class="toast" id="toast"></div>
 
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-  <script src="icons.js?v=24"></script>
-  <script src="api.js?v=24"></script>
-  <script src="app.js?v=24"></script>
+  <script src="icons.js?v=25"></script>
+  <script src="api.js?v=25"></script>
+  <script src="app.js?v=25"></script>
 </body>
 </html>

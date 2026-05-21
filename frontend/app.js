@@ -1645,6 +1645,219 @@ Q13 (why you):
   });
 }
 
+// ---------- SERIES PLANNER ----------
+// Weekday convention: 0=Sun ... 6=Sat (matches JS getDay())
+const _seriesState = { rows: [], initialized: false };
+const WD_LABELS = ['CN','T2','T3','T4','T5','T6','T7'];
+const FORMAT_CHOICES = [
+  { value: '', label: '— Format —' },
+  { value: 'pov', label: 'POV story' },
+  { value: 'vlog', label: 'Vlog · BTS' },
+  { value: 'coaching', label: 'Coaching style' },
+  { value: 'talking-head', label: 'Talking head · tips' },
+  { value: 'storytelling', label: 'Storytelling' },
+  { value: 'breakdown', label: 'Framework breakdown' },
+  { value: 'tutorial', label: 'Tutorial · how-to' },
+  { value: 'testimonial', label: 'Testimonial' },
+  { value: 'documentary', label: 'Documentary · series' },
+  { value: 'reel', label: 'Reel · cross-post' },
+  { value: 'carousel', label: 'Carousel' }
+];
+
+async function loadSeriesPlanner() {
+  if ($('#sp-start') && !$('#sp-start').value) {
+    $('#sp-start').value = today();
+  }
+  const rows = await API.listSeries();
+  _seriesState.rows = rows.length ? rows.map(serverToRow) : [];
+  if (!_seriesState.initialized) {
+    bindSeriesPlannerControls();
+    _seriesState.initialized = true;
+  }
+  // Pre-fill strategy fields from first row if exists
+  if (_seriesState.rows.length) {
+    const first = _seriesState.rows[0];
+    if (!$('#sp-goal').value) $('#sp-goal').value = first.goal_text || '';
+    $('#sp-platform').value = first.platform || 'tiktok';
+    $('#sp-weeks').value = String(first.repeat_weeks || 4);
+    if (!$('#sp-start').value) $('#sp-start').value = first.start_date;
+    if (!$('#sp-target-views').value) $('#sp-target-views').value = first.target_views || '';
+  }
+  renderSeriesRows();
+}
+
+function serverToRow(s) {
+  return {
+    id: s.id, name: s.name || '',
+    platform: s.platform || 'tiktok',
+    goal_text: s.goal_text || '', target_views: s.target_views || 0,
+    weekdays: Array.isArray(s.weekdays) ? s.weekdays : [],
+    repeat_weeks: s.repeat_weeks || 4,
+    start_date: s.start_date || today(),
+    post_time: s.post_time || '20:00',
+    format: s.format || '',
+    color: s.color || '#a78bfa',
+    status: s.status || 'active',
+    _existed: true
+  };
+}
+
+function newSeriesRow(partial = {}) {
+  return {
+    id: null,
+    name: '', platform: $('#sp-platform')?.value || 'tiktok',
+    goal_text: $('#sp-goal')?.value || '',
+    target_views: 0,
+    weekdays: [], repeat_weeks: parseInt($('#sp-weeks')?.value || 4, 10),
+    start_date: $('#sp-start')?.value || today(),
+    post_time: '20:00', format: '',
+    color: '#a78bfa', status: 'active',
+    _existed: false, ...partial
+  };
+}
+
+function bindSeriesPlannerControls() {
+  $('#sp-add')?.addEventListener('click', () => {
+    _seriesState.rows.push(newSeriesRow());
+    renderSeriesRows();
+  });
+  $('#sp-template')?.addEventListener('click', () => {
+    $('#sp-goal').value = 'Giúp tôi đạt 1M views trên TikTok Tuwi NG';
+    $('#sp-platform').value = 'tiktok';
+    $('#sp-weeks').value = '4';
+    $('#sp-target-views').value = '1000000';
+    _seriesState.rows = [
+      newSeriesRow({ name: 'Building ANG CONSULTING',                          weekdays: [1],       format: 'vlog' }),
+      newSeriesRow({ name: 'Học 30 kỹ năng để mở lớp online (2026)',           weekdays: [2,4,6],   format: 'tutorial' }),
+      newSeriesRow({ name: 'POV: 1 ngày...',                                    weekdays: [3],       format: 'pov' }),
+      newSeriesRow({ name: 'Storytelling',                                      weekdays: [5],       format: 'storytelling' }),
+      newSeriesRow({ name: 'POV: enjoy life',                                   weekdays: [0],       format: 'pov' })
+    ];
+    renderSeriesRows();
+  });
+  $('#sp-materialize')?.addEventListener('click', materializeSeries);
+
+  // Strategy header fields propagate to all rows on change
+  ['sp-platform', 'sp-weeks', 'sp-start', 'sp-goal', 'sp-target-views'].forEach(id => {
+    $('#' + id)?.addEventListener('change', () => {
+      _seriesState.rows.forEach(r => {
+        r.platform     = $('#sp-platform').value;
+        r.repeat_weeks = parseInt($('#sp-weeks').value, 10);
+        r.start_date   = $('#sp-start').value;
+        r.goal_text    = $('#sp-goal').value;
+        r.target_views = Number($('#sp-target-views').value || 0);
+      });
+      updateSeriesSummary();
+    });
+  });
+}
+
+function renderSeriesRows() {
+  const root = $('#sp-list');
+  if (!root) return;
+  if (!_seriesState.rows.length) {
+    root.innerHTML = `<div class="empty-state" style="padding:24px;text-align:center;color:var(--text-2)">
+      Chưa có series. Click <b>Add series</b> hoặc <b>Use Tuwi NG template</b> để bắt đầu.
+    </div>`;
+    updateSeriesSummary();
+    return;
+  }
+  root.innerHTML = _seriesState.rows.map((r, i) => seriesRowHtml(r, i)).join('');
+
+  // Wire row inputs
+  root.querySelectorAll('.series-row').forEach(rowEl => {
+    const i = parseInt(rowEl.dataset.idx, 10);
+    rowEl.querySelector('.sr-name')?.addEventListener('input', e => _seriesState.rows[i].name = e.target.value);
+    rowEl.querySelector('.sr-format')?.addEventListener('change', e => _seriesState.rows[i].format = e.target.value);
+    rowEl.querySelector('.sr-time')?.addEventListener('change', e => _seriesState.rows[i].post_time = e.target.value);
+    rowEl.querySelector('.sr-repeat')?.addEventListener('change', e => {
+      _seriesState.rows[i].repeat_weeks = parseInt(e.target.value, 10);
+      updateSeriesSummary();
+    });
+    rowEl.querySelector('.sr-del')?.addEventListener('click', () => {
+      _seriesState.rows.splice(i, 1);
+      renderSeriesRows();
+    });
+    rowEl.querySelectorAll('.wd').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const d = parseInt(btn.dataset.day, 10);
+        const arr = _seriesState.rows[i].weekdays;
+        const idx = arr.indexOf(d);
+        if (idx >= 0) arr.splice(idx, 1); else arr.push(d);
+        arr.sort();
+        btn.classList.toggle('on');
+        updateSeriesSummary();
+      });
+    });
+  });
+  updateSeriesSummary();
+}
+
+function seriesRowHtml(r, i) {
+  const wdHtml = WD_LABELS.map((lbl, d) => `
+    <button type="button" class="wd ${r.weekdays.includes(d) ? 'on' : ''}" data-day="${d}">${lbl}</button>
+  `).join('');
+  const fmtOpts = FORMAT_CHOICES.map(f =>
+    `<option value="${f.value}" ${f.value === r.format ? 'selected' : ''}>${f.label}</option>`
+  ).join('');
+  return `
+    <div class="series-row" data-idx="${i}">
+      <input type="text" class="sr-name" placeholder="Series name" value="${escapeAttr(r.name)}" />
+      <select class="sr-format">${fmtOpts}</select>
+      <div class="weekday-pickers">${wdHtml}</div>
+      <input type="time" class="sr-time" value="${r.post_time || '20:00'}" />
+      <select class="sr-repeat">
+        <option value="1"  ${r.repeat_weeks===1  ? 'selected':''}>1 tuần</option>
+        <option value="2"  ${r.repeat_weeks===2  ? 'selected':''}>2 tuần</option>
+        <option value="4"  ${r.repeat_weeks===4  ? 'selected':''}>1 tháng</option>
+        <option value="8"  ${r.repeat_weeks===8  ? 'selected':''}>2 tháng</option>
+        <option value="12" ${r.repeat_weeks===12 ? 'selected':''}>3 tháng</option>
+        <option value="24" ${r.repeat_weeks===24 ? 'selected':''}>6 tháng</option>
+      </select>
+      <button class="sr-del" title="Remove series"><i class="lucide-trash-2"></i></button>
+    </div>
+  `;
+}
+
+function escapeAttr(s) { return String(s || '').replace(/"/g, '&quot;').replace(/</g, '&lt;'); }
+
+function updateSeriesSummary() {
+  const el = $('#sp-summary');
+  if (!el) return;
+  const totalPosts = _seriesState.rows.reduce((t, r) =>
+    t + (r.weekdays?.length || 0) * (r.repeat_weeks || 0), 0);
+  const seriesCount = _seriesState.rows.filter(r => r.name && r.weekdays.length).length;
+  if (!totalPosts) { el.textContent = ''; return; }
+  el.innerHTML = `→ Sẽ tạo <b>${totalPosts}</b> slots từ <b>${seriesCount}</b> series active. Bấm <b>Push to Schedule</b> để đẩy vào content_plan.`;
+}
+
+async function materializeSeries() {
+  const valid = _seriesState.rows.filter(r => r.name && r.weekdays.length);
+  if (!valid.length) { toast('Hãy thêm ít nhất 1 series có tên + weekday'); return; }
+  toast('Saving series…');
+  // Sync rows to server (create or update)
+  for (const r of valid) {
+    const payload = {
+      name: r.name, platform: r.platform,
+      goal_text: r.goal_text, target_views: r.target_views,
+      weekdays: r.weekdays, repeat_weeks: r.repeat_weeks,
+      start_date: r.start_date, post_time: r.post_time,
+      format: r.format, color: r.color, status: 'active'
+    };
+    if (r.id) {
+      await API.updateSeries(r.id, payload);
+    } else {
+      const created = await API.createSeries(payload);
+      if (created?.id) r.id = created.id;
+    }
+  }
+  // Delete any rows that were removed (have id but no longer in state — already handled by removing from state)
+  toast('Generating schedule slots…');
+  const out = await API.materializeAllSeries();
+  toast(`Pushed ${out?.total_posts || 0} slots to Schedule`);
+  if (typeof loadSchedule === 'function') loadSchedule();
+}
+
 // ---------- CAMPAIGNS ----------
 async function loadCampaigns() {
   const list = await API.campaigns();
@@ -3247,6 +3460,7 @@ document.addEventListener('click', e => {
   if (id === 'ideas-mine') loadMyIdeas();
   if (id === 'ideas-trending') loadIdeas();
   if (id === 'strat-campaigns') loadCampaigns();
+  if (id === 'strat-series') loadSeriesPlanner();
   if (id === 'trk-prospects') loadProspects();
 });
 

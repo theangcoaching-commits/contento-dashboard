@@ -151,7 +151,7 @@ r.post('/campaigns/:id/materialize', (req, res) => {
         target_views: 0, target_leads: 0,
         status: 'idea', week_idx: null,
         repeat_group_id: null, repeat_rule: null,
-        campaign_id: c.id,
+        campaign_id: c.id, series_id: null,
         created_at: now, updated_at: now
       });
       added++;
@@ -175,7 +175,7 @@ r.post('/campaigns/:id/materialize', (req, res) => {
         target_views: 0, target_leads: 0,
         status: 'idea', week_idx: null,
         repeat_group_id: null, repeat_rule: null,
-        campaign_id: c.id,
+        campaign_id: c.id, series_id: null,
         created_at: now, updated_at: now
       });
       added++;
@@ -195,7 +195,7 @@ r.post('/campaigns/:id/materialize', (req, res) => {
         target_views: 0, target_leads: 0,
         status: 'idea', week_idx: null,
         repeat_group_id: null, repeat_rule: null,
-        campaign_id: c.id,
+        campaign_id: c.id, series_id: null,
         created_at: now, updated_at: now
       });
       added++;

@@ -1623,6 +1623,71 @@ button { font-family: var(--sans); cursor: pointer; border: 0; }
 }
 .campaign-hero p { margin: 8px 0 0; font-size: 13.5px; }
 
+/* ============ SERIES PLANNER ============ */
+.series-hero {
+  background:
+    radial-gradient(ellipse 80% 60% at 0% 0%, rgba(96, 165, 250, 0.14), transparent 60%),
+    var(--surface);
+}
+.series-hero p { margin: 8px 0 0; font-size: 13.5px; }
+
+.series-strategy-grid {
+  display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-top: 14px;
+}
+.series-strategy-grid .field-col { display: flex; flex-direction: column; gap: 6px; }
+.series-strategy-grid label { font-size: 11.5px; color: var(--text-2); text-transform: uppercase; letter-spacing: 0.06em; font-weight: 600; }
+.series-strategy-grid input, .series-strategy-grid select {
+  padding: 10px 12px; border-radius: 10px; border: 1px solid var(--border);
+  background: var(--surface-2); color: var(--text); font-size: 13.5px;
+}
+@media (max-width: 900px) { .series-strategy-grid { grid-template-columns: repeat(2, 1fr); } }
+
+.series-table-head, .series-row {
+  display: grid;
+  grid-template-columns: 1.8fr 1fr 2fr 0.9fr 0.9fr 36px;
+  gap: 10px; align-items: center;
+}
+.series-table-head {
+  padding: 10px 4px; font-size: 11px; color: var(--text-2);
+  text-transform: uppercase; letter-spacing: 0.07em; font-weight: 600;
+  border-bottom: 1px solid var(--border);
+}
+.weekday-head { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; text-align: center; }
+
+.series-list { display: flex; flex-direction: column; gap: 8px; margin-top: 8px; }
+.series-row {
+  padding: 10px 6px; border-radius: 12px;
+  background: rgba(255,255,255,0.02);
+  border: 1px solid var(--border);
+  transition: background 0.15s;
+}
+.series-row:hover { background: rgba(255,255,255,0.04); }
+.series-row input[type="text"], .series-row input[type="time"], .series-row select {
+  width: 100%; padding: 8px 10px; border-radius: 8px;
+  border: 1px solid var(--border); background: var(--surface-2);
+  color: var(--text); font-size: 13px;
+}
+.weekday-pickers { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
+.weekday-pickers .wd {
+  width: 100%; height: 32px; border-radius: 8px;
+  border: 1px solid var(--border); background: transparent;
+  color: var(--text-2); font-weight: 600; font-size: 11.5px;
+  cursor: pointer; transition: all 0.15s; padding: 0;
+}
+.weekday-pickers .wd:hover { color: var(--text); border-color: rgba(167,139,250,0.4); }
+.weekday-pickers .wd.on {
+  background: linear-gradient(180deg, rgba(167,139,250,0.32), rgba(167,139,250,0.18));
+  border-color: rgba(167,139,250,0.55);
+  color: #fff; box-shadow: 0 0 0 1px rgba(167,139,250,0.3) inset;
+}
+.series-row .sr-del {
+  width: 32px; height: 32px; border-radius: 8px;
+  display: inline-flex; align-items: center; justify-content: center;
+  background: transparent; border: 1px solid var(--border);
+  color: var(--text-2); cursor: pointer;
+}
+.series-row .sr-del:hover { color: #ff6b6b; border-color: rgba(255,107,107,0.5); }
+
 .campaigns-grid {
   display: grid; grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
   gap: 18px;

@@ -234,7 +234,7 @@ export function materializeWeekToPlan(period, weekIdx, startDate) {
         outline: JSON.stringify(slot.outline || []), script: '', cta: slot.cta || '',
         target_views: slot.target_views || 0, target_leads: slot.target_leads || 0,
         status: 'idea', week_idx: weekIdx,
-        repeat_group_id: null, repeat_rule: null, campaign_id: null,
+        repeat_group_id: null, repeat_rule: null, campaign_id: null, series_id: null,
         created_at: now, updated_at: now
       });
       inserted++;

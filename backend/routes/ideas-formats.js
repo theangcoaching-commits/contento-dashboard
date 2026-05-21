@@ -104,6 +104,7 @@ r.post('/my-ideas/:id/schedule', (req, res) => {
     repeat_group_id: null,
     repeat_rule: null,
     campaign_id: null,
+    series_id: null,
     created_at: nowIso(),
     updated_at: nowIso()
   });

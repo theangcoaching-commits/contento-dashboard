@@ -193,6 +193,30 @@ const API = {
       body: JSON.stringify({ weekIdx, startDate })
     });
   },
+
+  // Content Series
+  async listSeries(platform) {
+    const q = platform ? ('?platform=' + platform) : '';
+    return (await safeFetch('/series' + q)) || [];
+  },
+  async createSeries(s) {
+    return await safeFetch('/series', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify(s)
+    });
+  },
+  async updateSeries(id, patch) {
+    return await safeFetch('/series/' + id, {
+      method:'PUT', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify(patch)
+    });
+  },
+  async deleteSeries(id) {
+    return await safeFetch('/series/' + id, { method:'DELETE' });
+  },
+  async materializeAllSeries() {
+    return await safeFetch('/series/materialize-all', { method:'POST' });
+  },
   async getContentPlan(query={}) {
     const q = new URLSearchParams(query).toString();
     return (await safeFetch('/content-plan?' + q)) || {};

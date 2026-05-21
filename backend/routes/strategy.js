@@ -152,6 +152,7 @@ r.post('/content-plan', (req, res) => {
       repeat_group_id: repeatGroupId,
       repeat_rule: repeat?.rule || null,
       campaign_id: b.campaign_id || null,
+      series_id: b.series_id || null,
       created_at: now,
       updated_at: now
     });
@@ -606,7 +607,7 @@ r.post('/funnel-plan/materialize', (req, res) => {
           outline: JSON.stringify([]), script: '', cta: '',
           target_views: 0, target_leads: 0,
           status: 'idea', week_idx: w + 1,
-          repeat_group_id: null, repeat_rule: null, campaign_id: null,
+          repeat_group_id: null, repeat_rule: null, campaign_id: null, series_id: null,
           created_at: now, updated_at: now
         });
         added++;
