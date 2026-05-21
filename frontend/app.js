@@ -952,12 +952,43 @@ async function loadIdeas() {
   renderTrends();
 }
 
+function renderCompletionStats(scheduleMap) {
+  const el = $('#completionStrip');
+  if (!el) return;
+  const allItems = Object.values(scheduleMap).flat();
+  if (!allItems.length) { el.style.display = 'none'; return; }
+  const total = allItems.length;
+  const done = allItems.filter(it => ['done','published','completed'].includes(it.status)).length;
+  const pct = Math.round(done / total * 100);
+  const byPlat = {};
+  for (const it of allItems) {
+    if (!byPlat[it.platform]) byPlat[it.platform] = { total: 0, done: 0 };
+    byPlat[it.platform].total++;
+    if (['done','published','completed'].includes(it.status)) byPlat[it.platform].done++;
+  }
+  const platLabel = { youtube: 'YT', tiktok: 'TT', instagram: 'IG' };
+  const platHtml = Object.entries(byPlat).map(([p, v]) =>
+    `<span class="cs-plat-chip ${p === 'youtube' ? 'yt' : p === 'tiktok' ? 'tt' : 'ig'}">${platLabel[p]||p} ${v.done}/${v.total}</span>`
+  ).join('');
+  el.style.display = '';
+  el.innerHTML = `<div class="completion-strip">
+    <div class="cs-left">
+      <span class="cs-rate">${pct}%</span>
+      <span class="cs-label">hoàn thành tháng này</span>
+      <span class="cs-count">${done} / ${total} videos đã đăng</span>
+    </div>
+    <div class="cs-bar-wrap"><div class="cs-bar"><div class="cs-fill" style="width:${pct}%"></div></div></div>
+    <div class="cs-plats">${platHtml}</div>
+  </div>`;
+}
+
 async function loadSchedule() {
   // Pull ONLY from content_plan (real data). No legacy/mock leak.
   const from = new Date(calYear, calMonth - 1, 1).toISOString().slice(0,10);
   const to   = new Date(calYear, calMonth, 0).toISOString().slice(0,10);
   const plan = await API.getContentPlan({ from, to });
   renderCalendar(plan || {});
+  renderCompletionStats(plan || {});
   const today = new Date().toISOString().slice(0,10);
   const items = (plan && plan[today]) || [];
   $('#todayLabel').textContent = new Date().toLocaleDateString('en-US', { weekday:'long', day:'2-digit', month:'long' });
@@ -974,21 +1005,27 @@ async function loadSchedule() {
 
 function openDayPlanModal(date, items) {
   const dateLabel = new Date(date).toLocaleDateString('en-US', { weekday:'long', day:'numeric', month:'long' });
-  const itemsHTML = (items.length ? items : []).map(it => `
-    <div class="batch-item" data-cp-id="${it.id}" style="cursor:pointer">
+  const itemsHTML = (items.length ? items : []).map(it => {
+    const isDone = it.status === 'done' || it.status === 'published' || it.status === 'completed';
+    const ep = it.ep_number ? ` EP ${it.ep_number}` : '';
+    return `
+    <div class="batch-item ${isDone ? 'done' : ''}" data-cp-id="${it.id}" style="cursor:pointer">
       <div class="batch-platform ${platCls(it.platform)}">${platIcon(it.platform)}</div>
       <div class="batch-time">${it.time || ''}</div>
       <div class="batch-body">
-        <h4>${escapeHtml(it.title || 'Untitled')}</h4>
+        <h4>${escapeHtml(it.title || 'Untitled')}${ep ? `<span class="batch-ep">${ep}</span>` : ''}</h4>
         ${it.hook ? `<span class="hook">"${escapeHtml(it.hook)}"</span>` : ''}
         <p>${escapeHtml(it.cta || '')}</p>
       </div>
       <div class="batch-status">
-        <span class="status-pill ${it.status || 'idea'}">${it.status || 'idea'}</span>
+        <span class="status-pill ${it.status || 'idea'}" data-pill="${it.id}">${it.status || 'idea'}</span>
+        <button class="batch-tick ${isDone ? 'checked' : ''}" data-batch-tick="${it.id}" title="${isDone ? 'Mark as pending' : 'Mark as done'}" onclick="event.stopPropagation()">
+          <i class="lucide-check"></i>
+        </button>
         <button class="round-mini" data-quick-delete="${it.id}" title="Delete this slot" onclick="event.stopPropagation()"><i class="lucide-trash"></i></button>
       </div>
-    </div>
-  `).join('') || '<p class="muted" style="text-align:center;padding:20px">Nothing planned for this day yet.</p>';
+    </div>`;
+  }).join('') || '<p class="muted" style="text-align:center;padding:20px">Nothing planned for this day yet.</p>';
 
   const actions = items.length ? [
     { label: 'Clear day', icon: 'lucide-trash', onClick: async () => {
@@ -1008,8 +1045,28 @@ function openDayPlanModal(date, items) {
 
   openModal({ title: `Plan for ${dateLabel}`, bodyHTML: `<div class="batch-list">${itemsHTML}</div>`, actions });
 
-  // Wire item click + quick-delete
+  // Wire tick + item click + quick-delete
   setTimeout(() => {
+    $$('#modalBody [data-batch-tick]').forEach(btn => {
+      btn.addEventListener('click', async e => {
+        e.stopPropagation();
+        const id = btn.dataset.batchTick;
+        const item = items.find(i => i.id === id);
+        if (!item) return;
+        const wasDone = item.status === 'done' || item.status === 'published' || item.status === 'completed';
+        const newStatus = wasDone ? 'idea' : 'done';
+        btn.classList.toggle('checked', !wasDone);
+        const row = btn.closest('.batch-item');
+        row?.classList.toggle('done', !wasDone);
+        const pill = row?.querySelector(`[data-pill="${id}"]`);
+        if (pill) { pill.className = `status-pill ${newStatus}`; pill.textContent = newStatus; }
+        try {
+          await API.updateContentPlan(id, { status: newStatus });
+          item.status = newStatus;
+          loadSchedule();
+        } catch { btn.classList.toggle('checked', wasDone); row?.classList.toggle('done', wasDone); }
+      });
+    });
     $$('#modalBody [data-cp-id]').forEach(el => el.addEventListener('click', () => {
       const item = items.find(i => i.id === el.dataset.cpId);
       if (item) { closeModal(); openContentPlanModal(item); }
