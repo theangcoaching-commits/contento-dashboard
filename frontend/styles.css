@@ -1373,6 +1373,13 @@ button { font-family: var(--sans); cursor: pointer; border: 0; }
 .cal-item.tt { border-left-color: var(--tt); }
 .cal-item.ig { border-left-color: var(--ig); }
 .cal-item .ci-time { font-weight: 600; color: var(--violet); flex-shrink: 0; }
+.cal-item .ci-plat {
+  font-size: 9px; font-weight: 700; letter-spacing: 0.04em;
+  padding: 1px 5px; border-radius: 4px; flex-shrink: 0;
+}
+.cal-item .ci-plat.yt { background: rgba(255,77,77,0.18); color: #ff9a9a; }
+.cal-item .ci-plat.tt { background: rgba(37,244,238,0.15); color: #6ff5f0; }
+.cal-item .ci-plat.ig { background: rgba(225,48,108,0.18); color: #f47ba6; }
 .cal-item .ci-title { overflow: hidden; text-overflow: ellipsis; }
 .cal-item.published { opacity: 0.85; }
 .cal-item.published .ci-title { text-decoration: line-through; text-decoration-color: rgba(255,255,255,0.2); }

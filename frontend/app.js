@@ -470,12 +470,14 @@ function renderCalendar(scheduleMap) {
     const moreCount = items.length - visible.length;
     const itemHtml = visible.map(it => {
       const cls = it.platform === 'youtube' ? 'yt' : it.platform === 'tiktok' ? 'tt' : 'ig';
+      const plat = it.platform === 'youtube' ? 'YT' : it.platform === 'tiktok' ? 'TT' : 'IG';
       const t = (it.time || '').slice(0, 5);
       const title = escapeHtml((it.title || '').replace(/^\[[^\]]+\]\s*·?\s*/, ''));
       const repeat = it.repeat_group_id ? '<span class="ci-repeat" title="Repeats">↻</span>' : '';
       const stat = it.status || '';
       return `<div class="cal-item ${cls} ${stat}" title="${escapeHtml(it.title||'')}">
         <span class="ci-time">${t}</span>
+        <span class="ci-plat ${cls}">${plat}</span>
         <span class="ci-title">${title}</span>
         ${repeat}
       </div>`;
