@@ -1,0 +1,1075 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Contento — Content Performance Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css?v=24" />
+</head>
+<body>
+
+  <div class="ambient">
+    <div class="blob b1"></div>
+    <div class="blob b2"></div>
+    <div class="blob b3"></div>
+  </div>
+
+  <header class="topbar">
+    <div class="brand">
+      <div class="brand-mark"><i class="lucide-zap"></i></div>
+      <span class="brand-text">Contento</span>
+    </div>
+
+    <nav class="pill-nav">
+      <a href="#" class="pill active" data-view="overview"><i class="lucide-home"></i><span>Home</span></a>
+      <a href="#" class="pill" data-view="strategy"><i class="lucide-target"></i><span>Strategy</span></a>
+      <a href="#" class="pill" data-view="tracking"><i class="lucide-bar-chart-3"></i><span>Tracking</span></a>
+      <a href="#" class="pill" data-view="ideas"><i class="lucide-sparkles"></i><span>Ideas</span></a>
+      <a href="#" class="pill" data-view="schedule"><i class="lucide-calendar-days"></i><span>Schedule</span></a>
+      <a href="#" class="pill" data-view="sops"><i class="lucide-book-open"></i><span>SOPs</span></a>
+    </nav>
+
+    <div class="top-actions">
+      <button class="round-btn" title="Notifications"><i class="lucide-bell"></i><span class="dot"></span></button>
+      <button class="round-btn" title="Library"><i class="lucide-folder"></i></button>
+      <button class="round-btn" title="Settings" data-view="settings"><i class="lucide-settings"></i></button>
+      <button class="round-btn theme-toggle"><i class="lucide-sun" id="themeIcon"></i></button>
+      <div class="user">
+        <div class="user-avatar">AN</div>
+        <div class="user-info">
+          <span class="user-name" id="userName">Connect account</span>
+          <span class="user-handle" id="userHandle">@not_linked</span>
+        </div>
+        <i class="lucide-chevron-down"></i>
+      </div>
+    </div>
+  </header>
+
+  <main class="main">
+
+    <!-- VIEW: OVERVIEW -->
+    <section class="view active" id="view-overview">
+
+      <!-- KPI snapshot row (top of Home) -->
+      <div class="home-snapshot">
+        <div class="card snap-card">
+          <div class="snap-icon yt"><i class="lucide-youtube"></i></div>
+          <div>
+            <span class="snap-eyebrow">YouTube subs</span>
+            <div class="snap-value" id="snapYtSubs">—</div>
+            <span class="snap-foot"><span id="snapYtViews">—</span> views · 30d</span>
+          </div>
+        </div>
+        <div class="card snap-card">
+          <div class="snap-icon tt"><i class="lucide-music"></i></div>
+          <div>
+            <span class="snap-eyebrow">TikTok followers</span>
+            <div class="snap-value" id="snapTtFollowers">—</div>
+            <span class="snap-foot"><span id="snapTtViews">—</span> views · 30d</span>
+          </div>
+        </div>
+        <div class="card snap-card">
+          <div class="snap-icon vio"><i class="lucide-users"></i></div>
+          <div>
+            <span class="snap-eyebrow">Leads · 30d</span>
+            <div class="snap-value" id="snapLeads">—</div>
+            <span class="snap-foot"><span id="snapStudents">0</span> students in pipeline</span>
+          </div>
+        </div>
+        <div class="card snap-card">
+          <div class="snap-icon gold"><i class="lucide-target"></i></div>
+          <div>
+            <span class="snap-eyebrow">Today's plan</span>
+            <div class="snap-value" id="snapTodayTotal">—</div>
+            <span class="snap-foot"><span id="snapTodayDone">0</span> done · <span id="snapTodayLeft">0</span> left</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 2-column: Today's tasks (primary) + Priority actions sidebar -->
+      <div class="home-grid">
+        <div class="card big-card">
+          <div class="big-head">
+            <div>
+              <h3 class="card-title">✅ Today's tasks · <span id="homeTodayDate">—</span></h3>
+              <span class="card-eyebrow" id="homeTodaySummary">—</span>
+            </div>
+            <a class="btn-pill sm" href="#" data-view="schedule"><i class="lucide-calendar"></i> Open schedule</a>
+          </div>
+          <div class="today-list" id="homeTodayList"></div>
+        </div>
+
+        <div class="card big-card">
+          <div class="big-head">
+            <div>
+              <h3 class="card-title">🎯 Lead-priority actions</h3>
+              <span class="card-eyebrow">AI optimized for conversions</span>
+            </div>
+          </div>
+          <div class="priority-list" id="priorityList"></div>
+        </div>
+      </div>
+
+      <div class="card big-card" style="margin-top:22px">
+        <div class="big-head">
+          <div>
+            <h3 class="card-title">🔥 What needs your attention this week</h3>
+            <span class="card-eyebrow">Tier A applicants · qualified students · campaign milestones</span>
+          </div>
+        </div>
+        <div id="homeAttention" class="focus-actions"></div>
+      </div>
+    </section>
+
+    <!-- VIEW: STRATEGY -->
+    <section class="view" id="view-strategy">
+      <div class="subtab-bar">
+        <button class="subtab active" data-subtab="strat-funnel"><i class="lucide-target"></i> Funnel strategy</button>
+        <button class="subtab" data-subtab="strat-campaigns"><i class="lucide-film"></i> Campaigns</button>
+      </div>
+
+      <!-- SUBPANEL: FUNNEL (existing content) -->
+      <div class="subpanel active" id="strat-funnel">
+      <!-- HEADER STRIP -->
+      <div class="card big-card strategy-hero">
+        <div>
+          <span class="card-eyebrow">Goal-driven strategy · <span id="stratPeriod">—</span></span>
+          <h2 class="big-amount" id="stratTitle">North star: hit your monthly target</h2>
+          <p class="muted" id="stratThesis">Tap "Generate plan" — AI builds 4-week strategy from your profile, goals, funnel math, and tracked creators.</p>
+        </div>
+        <div class="strat-actions">
+          <button class="btn-pill" id="editGoal"><i class="lucide-edit"></i> Edit goal</button>
+          <button class="btn-pill primary" id="genStrategy"><i class="lucide-sparkles"></i> Generate plan</button>
+        </div>
+      </div>
+
+      <!-- CONTENT FUNNEL STRATEGY (TOFU/MOFU/BOFU) -->
+      <div class="card big-card funnel-strategy">
+        <div class="big-head">
+          <div>
+            <h3 class="card-title">Content funnel strategy · TOFU → MOFU → BOFU</h3>
+            <span class="card-eyebrow">Pick your objective. We map it to a 3-stage funnel + weekly template.</span>
+          </div>
+        </div>
+
+        <div class="objective-grid" id="objectiveGrid">
+          <button class="obj-card" data-objective="viral">
+            <div class="obj-emoji">🚀</div>
+            <h4>Viral growth</h4>
+            <p>Pivoting / launching a new channel.<br/>Need eyeballs first.</p>
+            <div class="obj-mix">TOFU 70 · MOFU 20 · BOFU 10</div>
+          </button>
+          <button class="obj-card" data-objective="trust">
+            <div class="obj-emoji">🤝</div>
+            <h4>Trust nurture</h4>
+            <p>Audience exists.<br/>Convert curiosity into belief.</p>
+            <div class="obj-mix">TOFU 30 · MOFU 50 · BOFU 20</div>
+          </button>
+          <button class="obj-card" data-objective="convert">
+            <div class="obj-emoji">💰</div>
+            <h4>Convert to sales</h4>
+            <p>Active launch / cart open.<br/>Drive bookings.</p>
+            <div class="obj-mix">TOFU 20 · MOFU 30 · BOFU 50</div>
+          </button>
+          <button class="obj-card" data-objective="balanced">
+            <div class="obj-emoji">⚖️</div>
+            <h4>Balanced engine</h4>
+            <p>Steady state.<br/>Compound everything.</p>
+            <div class="obj-mix">TOFU 40 · MOFU 40 · BOFU 20</div>
+          </button>
+        </div>
+
+        <div class="funnel-controls">
+          <div>
+            <label>Platform</label>
+            <select id="fn-platform">
+              <option value="tiktok" selected style="color:#6ff5f0;background:#181828">TikTok</option>
+              <option value="youtube" style="color:#ff8a8a;background:#181828">YouTube</option>
+              <option value="instagram" style="color:#f47ba6;background:#181828">Instagram</option>
+            </select>
+          </div>
+          <div>
+            <label>Timeframe</label>
+            <select id="fn-days">
+              <option value="7">1 week</option>
+              <option value="14">2 weeks</option>
+              <option value="30" selected>1 month</option>
+              <option value="90">3 months</option>
+            </select>
+          </div>
+          <button class="btn-pill primary" id="fn-build"><i class="lucide-target"></i> Build funnel plan</button>
+        </div>
+
+        <div id="fn-result"></div>
+      </div>
+
+      <!-- STRATEGIC RECOMMENDER (collapsible secondary tool) -->
+      <details class="card big-card recommender">
+        <summary style="cursor:pointer;display:flex;align-items:center;gap:10px;padding:4px 0;font-weight:600">
+          <i class="lucide-target" style="color:var(--violet)"></i>
+          <span>Quick reverse-math · target → views needed</span>
+          <span class="muted small" style="margin-left:auto">Click to expand</span>
+        </summary>
+        <div style="margin-top:14px">
+        <div class="big-head">
+          <div>
+            <h3 class="card-title">Strategic recommender · what to post to hit your number</h3>
+            <span class="card-eyebrow">Reverse-math from a specific goal → format mix → weekly plan</span>
+          </div>
+        </div>
+        <div class="recommender-inputs">
+          <div>
+            <label>I want</label>
+            <input type="number" id="rec-target" value="1000" />
+          </div>
+          <div>
+            <label>Metric</label>
+            <select id="rec-metric">
+              <option value="subs">YT subscribers</option>
+              <option value="followers" selected>TT/IG followers</option>
+              <option value="leads">Leads (form / DM)</option>
+            </select>
+          </div>
+          <div>
+            <label>On</label>
+            <select id="rec-platform">
+              <option value="tiktok" selected style="color:#6ff5f0;background:#181828">TikTok</option>
+              <option value="youtube" style="color:#ff8a8a;background:#181828">YouTube</option>
+              <option value="instagram" style="color:#f47ba6;background:#181828">Instagram</option>
+            </select>
+          </div>
+          <div>
+            <label>In</label>
+            <div style="display:flex;align-items:center;gap:8px">
+              <input type="number" id="rec-days" value="30" style="width:80px" />
+              <span class="muted">days</span>
+            </div>
+          </div>
+          <button class="btn-pill primary" id="rec-go"><i class="lucide-target"></i> Recommend</button>
+        </div>
+        <div id="rec-result"></div>
+        </div>
+      </details>
+
+      <!-- COMPACT row: Goal math + Progress -->
+      <div class="row-2">
+        <div class="card big-card">
+          <div class="big-head">
+            <h3 class="card-title">Goal math</h3>
+            <span class="card-eyebrow">Backwards from leads → views</span>
+          </div>
+          <div class="math-grid" id="mathGrid"></div>
+        </div>
+        <div class="card big-card">
+          <div class="big-head">
+            <h3 class="card-title">Progress toward goal</h3>
+            <span class="card-eyebrow">Real vs target · this month</span>
+          </div>
+          <div class="progress-list" id="progressList"></div>
+        </div>
+      </div>
+
+      <!-- Hidden legacy 4-weeks grid (kept for backward compat with loaders) -->
+      <div class="weeks-grid" id="weeksGrid" style="display:none"></div>
+
+      <!-- ROW: Today's batch + Leads hub side-by-side -->
+      <div class="row-2">
+        <div class="card big-card">
+          <div class="big-head">
+            <h3 class="card-title">Today's content batch</h3>
+            <span class="card-eyebrow" id="batchSubtitle">—</span>
+          </div>
+          <div class="batch-list" id="batchList"></div>
+        </div>
+        <div class="card big-card leads-hub">
+          <div class="big-head">
+            <div>
+              <h3 class="card-title">Leads</h3>
+              <span class="card-eyebrow">The only number that matters</span>
+            </div>
+            <div style="display:flex;gap:8px">
+              <button class="btn-pill sm" id="setupGAS"><i class="lucide-external-link"></i> Form</button>
+              <button class="btn-pill primary sm" id="addLead"><i class="lucide-plus"></i> Log</button>
+            </div>
+          </div>
+          <div class="leads-stats" id="leadsStats"></div>
+          <div class="leads-list" id="leadsList"></div>
+        </div>
+      </div>
+
+      <!-- FORMAT LIBRARY -->
+      <div class="card big-card">
+        <div class="big-head">
+          <div>
+            <h3 class="card-title">Format library · what to make to hit your goal</h3>
+            <span class="card-eyebrow">Your saved formats + AI-suggested winners. Click to use →</span>
+          </div>
+          <div style="display:flex; gap:10px">
+            <button class="btn-pill" id="suggestFormats"><i class="lucide-sparkles"></i> AI suggest formats</button>
+            <button class="btn-pill primary" id="addFormat"><i class="lucide-plus"></i> Add my format</button>
+          </div>
+        </div>
+        <div class="filter-bar" style="margin-bottom:14px">
+          <div class="chips">
+            <button class="chip active" data-format-platform="all">All</button>
+            <button class="chip" data-format-platform="youtube"><i class="lucide-youtube"></i> YouTube</button>
+            <button class="chip" data-format-platform="tiktok"><i class="lucide-music"></i> TikTok</button>
+            <button class="chip" data-format-platform="instagram"><i class="lucide-instagram"></i> Instagram</button>
+          </div>
+          <div class="chips">
+            <button class="chip active" data-format-cat="all">All</button>
+            <button class="chip" data-format-cat="mine">Mine</button>
+            <button class="chip" data-format-cat="ai">AI suggested</button>
+          </div>
+        </div>
+        <div class="formats-grid" id="formatsGrid"></div>
+      </div>
+      </div><!-- /strat-funnel subpanel -->
+
+      <!-- SUBPANEL: CAMPAIGNS -->
+      <div class="subpanel" id="strat-campaigns">
+        <div class="card big-card campaign-hero">
+          <div>
+            <span class="card-eyebrow">Long-form themed series</span>
+            <h2 class="big-amount">Campaigns · documentary-style content arcs</h2>
+            <p class="muted">Plan multi-week campaigns with phases (Recruit → Reveal → Journey → Result). Each campaign auto-creates content_plan slots.</p>
+          </div>
+          <div style="display:flex; gap:10px; flex-shrink:0">
+            <button class="btn-pill" id="seed30M"><i class="lucide-rocket"></i> Use "30M template"</button>
+            <button class="btn-pill primary" id="newCampaign"><i class="lucide-plus"></i> New campaign</button>
+          </div>
+        </div>
+
+        <div id="campaignDetail" hidden></div>
+
+        <div id="campaignsList"></div>
+      </div>
+    </section>
+
+    <!-- VIEW: CHANNELS -->
+    <section class="view" id="view-channels">
+      <div class="filter-bar">
+        <div class="chips">
+          <button class="chip active" data-platform="all">All</button>
+          <button class="chip" data-platform="youtube"><i class="lucide-youtube"></i> YouTube</button>
+          <button class="chip" data-platform="tiktok"><i class="lucide-music"></i> TikTok</button>
+          <button class="chip" data-platform="instagram"><i class="lucide-instagram"></i> Instagram</button>
+        </div>
+        <div class="range">
+          <button class="chip" data-range="7">7D</button>
+          <button class="chip active" data-range="30">30D</button>
+          <button class="chip" data-range="90">90D</button>
+          <button class="chip" data-range="365">YTD</button>
+          <button class="btn-pill" id="btnSync"><i class="lucide-refresh-cw"></i> Sync now</button>
+        </div>
+      </div>
+
+      <div class="kpi-row">
+        <div class="card kpi-card yt">
+          <div class="kpi-head"><i class="lucide-youtube"></i><span>YouTube</span></div>
+          <div class="kpi-value" id="ytViews">—</div>
+          <div class="kpi-meta">Views · 30d</div>
+          <div class="kpi-foot">
+            <span><b id="ytSubs">—</b><br/><span class="muted">Subs</span></span>
+            <span><b id="ytCtr">—</b><br/><span class="muted">CTR</span></span>
+            <span><b id="ytWatch">—</b><br/><span class="muted">Watch hrs</span></span>
+          </div>
+        </div>
+        <div class="card kpi-card tt">
+          <div class="kpi-head"><i class="lucide-music"></i><span>TikTok</span></div>
+          <div class="kpi-value" id="ttViews">—</div>
+          <div class="kpi-meta">Views · 30d</div>
+          <div class="kpi-foot">
+            <span><b id="ttFollowers">—</b><br/><span class="muted">Followers</span></span>
+            <span><b id="ttEngage">—</b><br/><span class="muted">Engage</span></span>
+            <span><b id="ttWatch">—</b><br/><span class="muted">Avg watch</span></span>
+          </div>
+        </div>
+        <div class="card kpi-card ig">
+          <div class="kpi-head"><i class="lucide-instagram"></i><span>Instagram</span></div>
+          <div class="kpi-value" id="igViews">—</div>
+          <div class="kpi-meta">Reach · 30d</div>
+          <div class="kpi-foot">
+            <span><b id="igFollowers">—</b><br/><span class="muted">Followers</span></span>
+            <span><b id="igEngage">—</b><br/><span class="muted">Engage</span></span>
+            <span><b id="igSaves">—</b><br/><span class="muted">Saves</span></span>
+          </div>
+        </div>
+        <div class="card kpi-card rev">
+          <div class="kpi-head"><i class="lucide-dollar-sign"></i><span>Revenue</span></div>
+          <div class="kpi-value" id="revValue">—</div>
+          <div class="kpi-meta">Attributed · 30d</div>
+          <div class="kpi-foot">
+            <span><b id="revCpl">—</b><br/><span class="muted">CPL</span></span>
+            <span><b id="revLtv">—</b><br/><span class="muted">LTV</span></span>
+            <span><b id="revRoas">—</b><br/><span class="muted">ROAS</span></span>
+          </div>
+        </div>
+      </div>
+
+      <div class="row-2">
+        <div class="card big-card">
+          <div class="big-head">
+            <h3 class="card-title">Views per platform (last 30 days)</h3>
+            <span class="legend">
+              <span class="leg yt"></span>YouTube
+              <span class="leg tt"></span>TikTok
+              <span class="leg ig"></span>Instagram
+            </span>
+          </div>
+          <canvas id="platformChart" height="140"></canvas>
+        </div>
+        <div class="card big-card">
+          <div class="big-head">
+            <h3 class="card-title">Conversion funnel</h3>
+            <span class="card-eyebrow">View → Lead → Customer</span>
+          </div>
+          <div class="funnel" id="funnel">
+            <div class="funnel-row"><div class="fb" style="width:100%"><span>Views</span><b id="fView">—</b></div></div>
+            <div class="funnel-row"><div class="fb" style="width:72%"><span>Engaged</span><b id="fEng">—</b></div></div>
+            <div class="funnel-row"><div class="fb" style="width:38%"><span>Clicks</span><b id="fClick">—</b></div></div>
+            <div class="funnel-row"><div class="fb" style="width:14%"><span>Leads</span><b id="fLead">—</b></div></div>
+            <div class="funnel-row"><div class="fb gold" style="width:6%"><span>Customers</span><b id="fCust">—</b></div></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card big-card">
+        <div class="big-head">
+          <h3 class="card-title">All videos (auto-synced)</h3>
+          <span class="card-eyebrow" id="lastSync">Last sync: —</span>
+        </div>
+        <div class="table">
+          <div class="thead">
+            <span>Video</span><span>Date</span><span>Platform</span>
+            <span>Views</span><span>Likes</span><span>Comments</span><span>CTR</span><span>Retention</span><span>Score</span>
+          </div>
+          <div id="videoTable"></div>
+        </div>
+      </div>
+
+      <div class="card big-card drive-panel" data-drive-tab="strategy">
+        <div class="big-head">
+          <div>
+            <span class="card-eyebrow"><i class="lucide-cloud"></i> Google Drive · Strategy folder</span>
+            <h3 class="card-title">Files for strategy planning</h3>
+          </div>
+          <div class="drive-actions">
+            <button class="btn-pill sm dp-new" data-kind="doc"><i class="lucide-file-text"></i> New Doc</button>
+            <button class="btn-pill sm dp-new" data-kind="sheet"><i class="lucide-table"></i> New Sheet</button>
+            <button class="btn-pill sm dp-new" data-kind="slide"><i class="lucide-presentation"></i> New Slides</button>
+            <a class="btn-pill sm dp-open" href="#" target="_blank"><i class="lucide-external-link"></i> Open folder</a>
+          </div>
+        </div>
+        <div class="track-input">
+          <i class="lucide-search"></i>
+          <input class="dp-search" type="text" placeholder="Search files in Strategy folder..." />
+        </div>
+        <div class="dp-list"></div>
+      </div>
+    </section>
+
+    <!-- VIEW: TRACKING — 3 sub-tabs -->
+    <section class="view" id="view-tracking">
+      <div class="subtab-bar">
+        <button class="subtab active" data-subtab="trk-mine"><i class="lucide-film"></i> My content</button>
+        <button class="subtab" data-subtab="trk-mentors"><i class="lucide-rocket"></i> Mentors</button>
+        <button class="subtab" data-subtab="trk-competitors"><i class="lucide-radar"></i> Competitors</button>
+        <button class="subtab" data-subtab="trk-prospects"><i class="lucide-users"></i> Students <span class="weight">CRM</span></button>
+      </div>
+
+      <!-- MY VIDEOS (primary tracking) -->
+      <div class="subpanel active" id="trk-mine">
+        <div class="kpi-row">
+          <div class="card kpi-card yt">
+            <div class="kpi-head"><i class="lucide-youtube"></i><span>YouTube</span></div>
+            <div class="kpi-value" id="mineYtViews">—</div>
+            <div class="kpi-meta">Views · 30d</div>
+            <div class="kpi-foot">
+              <span><b id="mineYtSubs">—</b><br/><span class="muted">Subs</span></span>
+              <span><b id="mineYtCtr">—</b><br/><span class="muted">CTR</span></span>
+              <span><b id="mineYtWatch">—</b><br/><span class="muted">Watch hrs</span></span>
+            </div>
+          </div>
+          <div class="card kpi-card tt">
+            <div class="kpi-head"><i class="lucide-music"></i><span>TikTok</span></div>
+            <div class="kpi-value" id="mineTtViews">—</div>
+            <div class="kpi-meta">Views · 30d</div>
+            <div class="kpi-foot">
+              <span><b id="mineTtFollowers">—</b><br/><span class="muted">Followers</span></span>
+              <span><b id="mineTtEngage">—</b><br/><span class="muted">Engage</span></span>
+              <span><b id="mineTtAvg">—</b><br/><span class="muted">Avg views</span></span>
+            </div>
+          </div>
+          <div class="card kpi-card ig">
+            <div class="kpi-head"><i class="lucide-instagram"></i><span>Instagram</span></div>
+            <div class="kpi-value" id="mineIgViews">—</div>
+            <div class="kpi-meta">Reach · 30d</div>
+            <div class="kpi-foot">
+              <span><b id="mineIgFollowers">—</b><br/><span class="muted">Followers</span></span>
+              <span><b id="mineIgEngage">—</b><br/><span class="muted">Engage</span></span>
+              <span><b id="mineIgSaves">—</b><br/><span class="muted">Saves/post</span></span>
+            </div>
+          </div>
+          <div class="card kpi-card rev">
+            <div class="kpi-head"><i class="lucide-dollar-sign"></i><span>Leads → Sales</span></div>
+            <div class="kpi-value" id="mineLeads">—</div>
+            <div class="kpi-meta">Leads · 30d</div>
+            <div class="kpi-foot">
+              <span><b id="mineCalls">—</b><br/><span class="muted">Calls</span></span>
+              <span><b id="mineSales">—</b><br/><span class="muted">Sales</span></span>
+              <span><b id="mineRev">—</b><br/><span class="muted">Revenue</span></span>
+            </div>
+          </div>
+        </div>
+
+        <div class="row-2">
+          <div class="card big-card">
+            <div class="big-head">
+              <h3 class="card-title">Views per platform (last 30 days)</h3>
+              <span class="legend">
+                <span class="leg yt"></span>YouTube
+                <span class="leg tt"></span>TikTok
+                <span class="leg ig"></span>Instagram
+              </span>
+            </div>
+            <div class="chart-wrap"><canvas id="platformChart"></canvas></div>
+          </div>
+          <div class="card big-card">
+            <div class="big-head">
+              <h3 class="card-title">Format performance</h3>
+              <span class="card-eyebrow">Which formats give you most views/leads</span>
+            </div>
+            <div class="format-perf" id="formatPerf"></div>
+          </div>
+        </div>
+
+        <!-- WINNING INSIGHTS — auto-derived from real video data -->
+        <div class="row-2">
+          <div class="card big-card">
+            <div class="big-head">
+              <div>
+                <h3 class="card-title">🏆 Winning videos (top 5 by score)</h3>
+                <span class="card-eyebrow">Studying these → know your formula</span>
+              </div>
+            </div>
+            <div id="winningVideos"></div>
+          </div>
+          <div class="card big-card">
+            <div class="big-head">
+              <div>
+                <h3 class="card-title">📈 Engagement rate trend</h3>
+                <span class="card-eyebrow">(likes + comments × 4) / views — 30d window</span>
+              </div>
+            </div>
+            <div class="chart-wrap"><canvas id="engagementChart"></canvas></div>
+          </div>
+        </div>
+
+        <!-- FOLLOWER GROWTH (daily count + deltas) -->
+        <div class="card big-card">
+          <div class="big-head">
+            <div>
+              <h3 class="card-title">👥 Follower growth tracker</h3>
+              <span class="card-eyebrow">TikTok API chỉ trả count tổng — không có danh sách followers cá nhân (privacy)</span>
+            </div>
+            <div class="chips" id="followerPlatformChips">
+              <button class="chip active" data-fg-platform="tiktok"><i class="lucide-music"></i> TikTok</button>
+              <button class="chip" data-fg-platform="youtube"><i class="lucide-youtube"></i> YouTube</button>
+            </div>
+          </div>
+          <div class="vitals-row" id="followerDeltas"></div>
+          <div class="chart-wrap" style="margin-top:14px"><canvas id="followerChart"></canvas></div>
+          <p class="muted small" id="followerNote" style="margin-top:10px"></p>
+        </div>
+
+        <!-- SHORTFORM KPI ROW (Soo Wei Goh style — what to obsess over for viral) -->
+        <div class="card big-card">
+          <div class="big-head">
+            <div>
+              <h3 class="card-title">⚡ Shortform vital signs</h3>
+              <span class="card-eyebrow">Save / share / comment ratios — these are what TikTok algorithm rewards</span>
+            </div>
+            <span class="muted small" id="vitalRange">Last 30 days · TikTok + IG Reels</span>
+          </div>
+          <div class="vitals-row" id="vitalsRow"></div>
+        </div>
+
+        <!-- Viral hits + top hooks -->
+        <div class="row-2">
+          <div class="card big-card">
+            <div class="big-head">
+              <div>
+                <h3 class="card-title">🚀 Viral hits</h3>
+                <span class="card-eyebrow">Shortform ≥100K · Longform ≥10K · target zones</span>
+              </div>
+            </div>
+            <div id="viralHits"></div>
+          </div>
+          <div class="card big-card">
+            <div class="big-head">
+              <div>
+                <h3 class="card-title">🪝 Top hooks (first 7 words)</h3>
+                <span class="card-eyebrow">Hooks that get highest avg views — reuse these patterns</span>
+              </div>
+            </div>
+            <div id="topHooks"></div>
+          </div>
+        </div>
+
+        <!-- Best posting time heatmap -->
+        <div class="card big-card">
+          <div class="big-head">
+            <div>
+              <h3 class="card-title">⏰ Best posting time heatmap</h3>
+              <span class="card-eyebrow">Avg views by day-of-week × hour-of-day — post when your audience is hot</span>
+            </div>
+          </div>
+          <div id="postingHeatmap"></div>
+        </div>
+
+        <div class="card big-card">
+          <div class="big-head">
+            <h3 class="card-title">🎯 Focus actions — what to do next</h3>
+            <span class="card-eyebrow">Auto-derived from your real data</span>
+          </div>
+          <div id="focusActions" class="focus-actions"></div>
+        </div>
+
+        <div class="card big-card">
+          <div class="big-head">
+            <div>
+              <h3 class="card-title">All my videos</h3>
+              <span class="card-eyebrow" id="mineSyncLabel">Last sync: —</span>
+            </div>
+            <div class="chips">
+              <button class="chip active" data-mine-platform="all">All</button>
+              <button class="chip" data-mine-platform="youtube"><i class="lucide-youtube"></i> YT</button>
+              <button class="chip" data-mine-platform="tiktok"><i class="lucide-music"></i> TT</button>
+              <button class="chip" data-mine-platform="instagram"><i class="lucide-instagram"></i> IG</button>
+              <button class="btn-pill sm" id="mineSyncBtn"><i class="lucide-refresh-cw"></i> Sync now</button>
+            </div>
+          </div>
+          <div class="table">
+            <div class="thead">
+              <span>Video</span><span>Date</span><span>Platform</span>
+              <span>Views</span><span>Likes</span><span>Comments</span><span>CTR</span><span>Retention</span><span>Score</span>
+            </div>
+            <div id="mineVideoTable"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- STUDENTS (CRM) -->
+      <div class="subpanel" id="trk-prospects">
+        <div class="card big-card prospects-hero">
+          <div>
+            <span class="card-eyebrow">CRM pipeline · Mochi-style</span>
+            <h2 class="big-amount">Students · potential participants of your challenge</h2>
+            <p class="muted">Paste TikTok / IG / YouTube profile URL → mình auto fetch profile + add vào pipeline. Track DM sent → reply → call → signed. Auto-followup mỗi 3 ngày nếu không reply.</p>
+          </div>
+          <div style="display:flex; gap:10px; flex-wrap:wrap; flex-shrink:0">
+            <button class="btn-pill" id="appFormBtn"><i class="lucide-file-text"></i> Application form</button>
+            <button class="btn-pill" id="prospectBookmarklet"><i class="lucide-external-link"></i> Bookmarklet</button>
+          </div>
+        </div>
+
+        <div class="card big-card">
+          <div class="track-input">
+            <i class="lucide-link"></i>
+            <input id="studentUrl" type="text" placeholder="https://tiktok.com/@username · https://instagram.com/username · https://youtube.com/@channel" />
+            <button class="btn-pill primary" id="addProspect"><i class="lucide-plus"></i> Add student</button>
+          </div>
+          <p class="muted" style="margin:8px 0 0;font-size:12px">💡 Tip: dán URL profile của comment dưới video viral → bookmarklet sẽ auto fetch avatar, name, bio</p>
+        </div>
+
+        <!-- APPLICATIONS panel (Google Form responses → scored applicants) -->
+        <div class="card big-card" id="applicationsPanel">
+          <div class="big-head">
+            <div>
+              <span class="card-eyebrow">📋 Google Form responses · auto-scored</span>
+              <h3 class="card-title" id="appsHeading">Applications from 2x Challenge form</h3>
+              <p class="muted small" id="appsSubhead">Link 1 Google Sheet → đọc + chấm điểm + chuyển qualified vào pipeline</p>
+            </div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center" id="appsActions">
+              <button class="btn-pill sm" id="appsRefreshBtn" style="display:none"><i class="lucide-refresh-cw"></i> Refresh</button>
+              <button class="btn-pill sm" id="appsUnlinkBtn" style="display:none"><i class="lucide-unlink"></i> Unlink</button>
+              <button class="btn-pill primary sm" id="appsLinkBtn"><i class="lucide-cloud"></i> Link Sheet</button>
+            </div>
+          </div>
+          <div class="apps-stats" id="appsStats"></div>
+          <div class="apps-list" id="appsList"></div>
+        </div>
+
+        <div class="prospects-pipeline" id="prospectsPipeline"></div>
+
+        <div class="card big-card">
+          <div class="big-head">
+            <h3 class="card-title">All students</h3>
+            <div class="chips" id="prospectStatusFilter">
+              <button class="chip active" data-prospect-status="all">All</button>
+              <button class="chip" data-prospect-status="new">New</button>
+              <button class="chip" data-prospect-status="dm_sent">DM sent</button>
+              <button class="chip" data-prospect-status="replied">Replied</button>
+              <button class="chip" data-prospect-status="qualified">Qualified</button>
+              <button class="chip" data-prospect-status="call_booked">Call booked</button>
+              <button class="chip" data-prospect-status="signed">Signed</button>
+            </div>
+          </div>
+          <div class="prospect-list" id="prospectsList"></div>
+        </div>
+      </div>
+
+      <!-- MENTORS -->
+      <div class="subpanel" id="trk-mentors">
+        <div class="card big-card">
+          <div class="big-head">
+            <div>
+              <h3 class="card-title">Mentors · creators you learn from</h3>
+              <p class="card-eyebrow">Paste channel URL — we'll mark it "Mentor" automatically</p>
+            </div>
+          </div>
+          <div class="track-input">
+            <i class="lucide-link"></i>
+            <input id="mentorUrl" type="text" placeholder="https://youtube.com/@imangadzhi · https://tiktok.com/@..." />
+            <button class="btn-pill primary" id="addMentor"><i class="lucide-plus"></i> Add mentor</button>
+          </div>
+        </div>
+        <div class="competitor-grid" id="mentorGrid"></div>
+        <div class="card big-card">
+          <div class="big-head">
+            <h3 class="card-title">Viral content from your mentors (7 days)</h3>
+            <span class="card-eyebrow">What's working for them right now</span>
+          </div>
+          <div class="viral-list" id="mentorViral"></div>
+        </div>
+      </div>
+
+      <!-- COMPETITORS -->
+      <div class="subpanel" id="trk-competitors">
+        <div class="card big-card">
+          <div class="big-head">
+            <div>
+              <h3 class="card-title">Competitors · same audience</h3>
+              <p class="card-eyebrow">Track creators going after the same audience as you</p>
+            </div>
+          </div>
+          <div class="track-input">
+            <i class="lucide-link"></i>
+            <input id="competitorUrl" type="text" placeholder="https://tiktok.com/@vietphong.coach · ..." />
+            <button class="btn-pill primary" id="addCompetitor"><i class="lucide-plus"></i> Add competitor</button>
+          </div>
+        </div>
+        <div class="competitor-grid" id="competitorGrid"></div>
+        <div class="row-2">
+          <div class="card big-card">
+            <div class="big-head">
+              <h3 class="card-title">Growth rate vs you (90d)</h3>
+            </div>
+            <canvas id="compareChart" height="160"></canvas>
+          </div>
+          <div class="card big-card">
+            <div class="big-head">
+              <h3 class="card-title">Competitor viral content</h3>
+            </div>
+            <div class="viral-list" id="competitorViral"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card big-card drive-panel" data-drive-tab="tracking">
+        <div class="big-head">
+          <div>
+            <span class="card-eyebrow"><i class="lucide-cloud"></i> Google Drive · Tracking folder</span>
+            <h3 class="card-title">Files for content tracking & analysis</h3>
+          </div>
+          <div class="drive-actions">
+            <button class="btn-pill sm dp-new" data-kind="doc"><i class="lucide-file-text"></i> New Doc</button>
+            <button class="btn-pill sm dp-new" data-kind="sheet"><i class="lucide-table"></i> New Sheet</button>
+            <button class="btn-pill sm dp-new" data-kind="slide"><i class="lucide-presentation"></i> New Slides</button>
+            <a class="btn-pill sm dp-open" href="#" target="_blank"><i class="lucide-external-link"></i> Open folder</a>
+          </div>
+        </div>
+        <div class="track-input">
+          <i class="lucide-search"></i>
+          <input class="dp-search" type="text" placeholder="Search files in Tracking folder..." />
+        </div>
+        <div class="dp-list"></div>
+      </div>
+    </section>
+
+    <!-- VIEW: IDEAS — 2 sub-tabs -->
+    <section class="view" id="view-ideas">
+      <div class="subtab-bar">
+        <button class="subtab active" data-subtab="ideas-trending"><i class="lucide-flame"></i> Trending</button>
+        <button class="subtab" data-subtab="ideas-mine"><i class="lucide-brain"></i> Brainstorm <span class="weight">Docs · Sheets</span></button>
+      </div>
+
+      <!-- TRENDING -->
+      <div class="subpanel active" id="ideas-trending">
+        <div class="card big-card ideas-hero">
+          <div>
+            <span class="card-eyebrow">AI weekly suggestions</span>
+            <h2 class="big-amount">What big creators are doing this week</h2>
+            <p class="muted">AI extracts trending formats from your mentors + global virals + your niche.</p>
+          </div>
+          <button class="btn-pill primary lg" id="genIdeas"><i class="lucide-sparkles"></i> Generate 5 more</button>
+        </div>
+        <div class="ideas-grid" id="ideasGrid"></div>
+        <div class="card big-card">
+          <div class="big-head">
+            <h3 class="card-title">Trending topics this week</h3>
+          </div>
+          <div class="trend-list" id="trendList"></div>
+        </div>
+      </div>
+
+      <!-- BRAINSTORM (My ideas + Google Docs/Sheets links) -->
+      <div class="subpanel" id="ideas-mine">
+        <div class="card big-card ideas-hero">
+          <div>
+            <span class="card-eyebrow">Brainstorm workspace</span>
+            <h2 class="big-amount">Brainstorm · link Google Docs, Sheets, Notion, Figma</h2>
+            <p class="muted">Mỗi idea có thể đính kèm 1 link Google Docs/Sheets/Slides/Notion/Figma — gõ search ở dưới để filter nhanh. Mark "Ready" → push qua Schedule.</p>
+          </div>
+          <div style="display:flex; gap:10px; flex-wrap:wrap">
+            <button class="btn-pill" id="bookmarkletBtn"><i class="lucide-external-link"></i> Bookmarklet</button>
+            <button class="btn-pill primary lg" id="addMyIdea"><i class="lucide-plus"></i> New idea</button>
+          </div>
+        </div>
+
+        <div class="card big-card">
+          <div class="track-input">
+            <i class="lucide-search"></i>
+            <input id="brainstormSearch" type="text" placeholder="Search ideas by title, tag, format..." />
+            <button class="btn-pill sm" id="brainstormClear" title="Clear search"><i class="lucide-x"></i></button>
+          </div>
+        </div>
+
+        <div class="filter-bar">
+          <div class="chips">
+            <button class="chip active" data-mine-status="all">All</button>
+            <button class="chip" data-mine-status="idea">Idea</button>
+            <button class="chip" data-mine-status="drafting">Drafting</button>
+            <button class="chip" data-mine-status="ready">Ready</button>
+            <button class="chip" data-mine-status="scheduled">Scheduled</button>
+          </div>
+          <div class="chips" id="docsKindFilter">
+            <button class="chip active" data-docs-kind="all">All sources</button>
+            <button class="chip" data-docs-kind="doc"><i class="lucide-file-text"></i> Docs</button>
+            <button class="chip" data-docs-kind="sheet"><i class="lucide-table"></i> Sheets</button>
+            <button class="chip" data-docs-kind="slide"><i class="lucide-presentation"></i> Slides</button>
+            <button class="chip" data-docs-kind="notion"><i class="lucide-book-open"></i> Notion</button>
+            <button class="chip" data-docs-kind="figma"><i class="lucide-pen-tool"></i> Figma</button>
+          </div>
+        </div>
+
+        <div class="ideas-grid" id="myIdeasGrid"></div>
+      </div>
+
+      <div class="card big-card drive-panel" data-drive-tab="ideas">
+        <div class="big-head">
+          <div>
+            <span class="card-eyebrow"><i class="lucide-cloud"></i> Google Drive · Ideas folder</span>
+            <h3 class="card-title">Files for brainstorming & references</h3>
+          </div>
+          <div class="drive-actions">
+            <button class="btn-pill sm dp-new" data-kind="doc"><i class="lucide-file-text"></i> New Doc</button>
+            <button class="btn-pill sm dp-new" data-kind="sheet"><i class="lucide-table"></i> New Sheet</button>
+            <button class="btn-pill sm dp-new" data-kind="slide"><i class="lucide-presentation"></i> New Slides</button>
+            <a class="btn-pill sm dp-open" href="#" target="_blank"><i class="lucide-external-link"></i> Open folder</a>
+          </div>
+        </div>
+        <div class="track-input">
+          <i class="lucide-search"></i>
+          <input class="dp-search" type="text" placeholder="Search files in Ideas folder..." />
+        </div>
+        <div class="dp-list"></div>
+      </div>
+    </section>
+
+    <!-- VIEW: SCHEDULE -->
+    <section class="view" id="view-schedule">
+      <div class="filter-bar">
+        <div class="chips">
+          <button class="chip" id="calPrev"><i class="lucide-chevron-left"></i></button>
+          <button class="chip active" id="calLabel">—</button>
+          <button class="chip" id="calNext"><i class="lucide-chevron-right"></i></button>
+        </div>
+        <div class="range">
+          <button class="chip" data-cal="week">Week</button>
+          <button class="chip active" data-cal="month">Month</button>
+          <button class="chip" data-cal="quarter">Quarter</button>
+          <button class="btn-pill" id="clearSchedule"><i class="lucide-trash"></i> Clear all</button>
+          <button class="btn-pill primary" id="addSchedule"><i class="lucide-plus"></i> Add schedule</button>
+        </div>
+      </div>
+
+      <div class="card big-card">
+        <div class="calendar" id="calendar"></div>
+      </div>
+
+      <div class="row-2">
+        <div class="card big-card">
+          <div class="big-head">
+            <h3 class="card-title">Today's plan</h3>
+            <span class="card-eyebrow" id="todayLabel">—</span>
+          </div>
+          <div class="today-list" id="todayList"></div>
+        </div>
+        <div class="card big-card">
+          <div class="big-head">
+            <h3 class="card-title">Lead-priority actions</h3>
+            <span class="card-eyebrow">AI optimized for conversions</span>
+          </div>
+          <div class="priority-list" id="priorityList"></div>
+        </div>
+      </div>
+
+      <div class="card big-card drive-panel" data-drive-tab="schedule">
+        <div class="big-head">
+          <div>
+            <span class="card-eyebrow"><i class="lucide-cloud"></i> Google Drive · Schedule folder</span>
+            <h3 class="card-title">Files for scripts, briefs & shot lists</h3>
+          </div>
+          <div class="drive-actions">
+            <button class="btn-pill sm dp-new" data-kind="doc"><i class="lucide-file-text"></i> New Doc</button>
+            <button class="btn-pill sm dp-new" data-kind="sheet"><i class="lucide-table"></i> New Sheet</button>
+            <button class="btn-pill sm dp-new" data-kind="slide"><i class="lucide-presentation"></i> New Slides</button>
+            <a class="btn-pill sm dp-open" href="#" target="_blank"><i class="lucide-external-link"></i> Open folder</a>
+          </div>
+        </div>
+        <div class="track-input">
+          <i class="lucide-search"></i>
+          <input class="dp-search" type="text" placeholder="Search files in Schedule folder..." />
+        </div>
+        <div class="dp-list"></div>
+      </div>
+    </section>
+
+    <!-- VIEW: SOPS -->
+    <section class="view" id="view-sops">
+      <div class="card big-card sops-hero">
+        <div>
+          <span class="card-eyebrow">📚 Tiered SOPs · synced với Google Drive</span>
+          <h2 class="big-amount">SOPs library cho client</h2>
+          <p class="muted">3 tier theo offer ladder của bạn: <b>STARTER 8M</b> · <b>GROWTH 15M</b> · <b>PREMIUM 25M</b>. Client mỗi tier sẽ unlock cumulative — Premium thấy hết, Growth thấy Starter+Growth, Starter chỉ thấy Starter. Mỗi tier có password riêng để share read-only cho client.</p>
+        </div>
+        <div style="display:flex;gap:10px;flex-wrap:wrap">
+          <button class="btn-pill" id="sopsClientView"><i class="lucide-eye"></i> Client preview</button>
+          <button class="btn-pill" id="sopsSeedBtn"><i class="lucide-sparkles"></i> Seed demo content</button>
+          <button class="btn-pill primary" id="sopsSetupBtn"><i class="lucide-folder-plus"></i> Setup / re-scan SOPs folders</button>
+        </div>
+      </div>
+
+      <div class="sops-tiers" id="sopsTiers"></div>
+    </section>
+
+    <!-- VIEW: SETTINGS -->
+    <section class="view" id="view-settings">
+      <div class="grid-3">
+        <div class="card connect-card yt" data-conn="youtube">
+          <i class="lucide-youtube big-icon"></i>
+          <h3>YouTube</h3>
+          <p class="muted">Connect via YouTube Data API v3 to auto-sync videos, KPIs, and audience.</p>
+          <button class="btn-pill primary" data-connect="youtube"><i class="lucide-plug"></i> Connect</button>
+          <span class="conn-status" id="ytStatus"><i class="lucide-circle"></i> Not connected</span>
+        </div>
+        <div class="card connect-card tt" data-conn="tiktok">
+          <i class="lucide-music big-icon"></i>
+          <h3>TikTok</h3>
+          <p class="muted">Use TikTok Display API for views, shares, and follower realtime data.</p>
+          <button class="btn-pill primary" data-connect="tiktok"><i class="lucide-plug"></i> Connect</button>
+          <span class="conn-status" id="ttStatus"><i class="lucide-circle"></i> Not connected</span>
+        </div>
+        <div class="card connect-card ig" data-conn="instagram">
+          <i class="lucide-instagram big-icon"></i>
+          <h3>Instagram</h3>
+          <p class="muted">Meta Graph API · requires a Business or Creator account linked to a Facebook page.</p>
+          <button class="btn-pill primary" data-connect="instagram"><i class="lucide-plug"></i> Connect</button>
+          <span class="conn-status" id="igStatus"><i class="lucide-circle"></i> Not connected</span>
+        </div>
+        <div class="card connect-card gdrive" data-conn="gdrive">
+          <i class="lucide-cloud big-icon"></i>
+          <h3>Google Drive</h3>
+          <p class="muted">Link Google Docs / Sheets / Slides into Brainstorm. Search files + create new Docs from any idea.</p>
+          <button class="btn-pill primary" data-connect="gdrive"><i class="lucide-plug"></i> Connect</button>
+          <span class="conn-status" id="gdriveStatus"><i class="lucide-circle"></i> Not connected</span>
+        </div>
+      </div>
+
+      <div class="card big-card">
+        <div class="big-head"><h3 class="card-title">Automations</h3></div>
+        <div class="auto-list">
+          <div class="auto-row">
+            <i class="lucide-refresh-cw"></i>
+            <div><b>Sync metrics every 30 minutes</b><span>YouTube · TikTok · Instagram</span></div>
+            <label class="switch"><input type="checkbox" checked data-auto="sync"><span></span></label>
+          </div>
+          <div class="auto-row">
+            <i class="lucide-bell"></i>
+            <div><b>Alert when a video crosses 100K views</b><span>Email + browser push</span></div>
+            <label class="switch"><input type="checkbox" checked data-auto="viral"><span></span></label>
+          </div>
+          <div class="auto-row">
+            <i class="lucide-file-text"></i>
+            <div><b>Weekly performance digest (Sunday 9 AM)</b><span>PDF report by email</span></div>
+            <label class="switch"><input type="checkbox" checked data-auto="digest"><span></span></label>
+          </div>
+          <div class="auto-row">
+            <i class="lucide-radar"></i>
+            <div><b>Scan competitor virals every 6 hours</b><span>Across your tracked channels</span></div>
+            <label class="switch"><input type="checkbox" data-auto="scan"><span></span></label>
+          </div>
+        </div>
+      </div>
+
+      <div class="card big-card">
+        <div class="big-head"><h3 class="card-title">Creator profile</h3></div>
+        <div class="form">
+          <div class="form-row">
+            <label>Display name</label>
+            <input type="text" id="profName" placeholder="e.g. ANG Coaching" />
+          </div>
+          <div class="form-row">
+            <label>Niche</label>
+            <input type="text" id="profNiche" placeholder="e.g. Business coaching · AI agency · Personal brand" />
+          </div>
+          <div class="form-row">
+            <label>Target audience</label>
+            <input type="text" id="profAudience" placeholder="e.g. Founders 22–35 scaling 0 → $10K/month" />
+          </div>
+          <div class="form-row">
+            <label>This month's goal</label>
+            <input type="text" id="profGoal" placeholder="e.g. 500 leads · $25K revenue · +20K followers" />
+          </div>
+          <button class="btn-pill primary" id="saveProfile"><i class="lucide-save"></i> Save profile</button>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- MODAL -->
+  <div class="modal-backdrop" id="modal" hidden>
+    <div class="modal-panel" role="dialog">
+      <div class="modal-head">
+        <h3 id="modalTitle">Title</h3>
+        <button class="round-mini" id="modalClose" aria-label="Close"><i class="lucide-x"></i></button>
+      </div>
+      <div class="modal-body" id="modalBody"></div>
+      <div class="modal-foot" id="modalFoot"></div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <script src="icons.js?v=24"></script>
+  <script src="api.js?v=24"></script>
+  <script src="app.js?v=24"></script>
+</body>
+</html>
