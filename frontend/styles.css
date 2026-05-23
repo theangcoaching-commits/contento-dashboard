@@ -1165,10 +1165,12 @@ button { font-family: var(--sans); cursor: pointer; border: 0; }
 }
 
 /* ============ CALENDAR ============ */
+.cal-card { overflow-x: auto !important; }
 .calendar {
-  display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px;
+  display: grid; grid-template-columns: repeat(7, minmax(120px, 1fr)); gap: 6px;
+  min-width: 840px;
 }
-.cal-head, .cal-cell { padding: 10px; }
+.cal-head, .cal-cell { padding: 8px; }
 .cal-head {
   font-size: 10.5px; letter-spacing: 0.12em; text-transform: uppercase;
   color: var(--text-3); text-align: center;
