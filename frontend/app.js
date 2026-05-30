@@ -1881,7 +1881,7 @@ function seriesRowHtml(r, i) {
         <option value="12" ${r.repeat_weeks===12 ? 'selected':''}>3 tháng</option>
         <option value="24" ${r.repeat_weeks===24 ? 'selected':''}>6 tháng</option>
       </select>
-      <button class="sr-del" title="Remove series"><i class="lucide-trash-2"></i></button>
+      <button class="sr-del" title="Remove series"><i class="lucide-trash"></i></button>
     </div>
   `;
 }
