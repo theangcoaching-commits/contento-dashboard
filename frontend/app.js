@@ -3222,7 +3222,7 @@ function escapeHtml(s) {
 }
 
 async function loadSettings() {
-  const [profile, conn] = await Promise.all([API.profile(), API.connections()]);
+  const [profile, conn, metrics] = await Promise.all([API.profile(), API.connections(), API.metrics()]);
   $('#profName').value     = profile.name || '';
   $('#profNiche').value    = profile.niche || '';
   $('#profAudience').value = profile.audience || '';
@@ -3231,6 +3231,15 @@ async function loadSettings() {
   // user pill
   $('#userName').textContent = profile.name || 'Connect account';
   $('#userHandle').textContent = '@' + (profile.name || 'creator').toLowerCase().replace(/\s+/g, '_');
+  // Populate stats form with current values
+  if ($('#statTtFollowers')) {
+    $('#statTtFollowers').value = metrics.tiktok?.followers || '';
+    $('#statTtViews').value     = metrics.tiktok?.views     || '';
+    $('#statYtSubs').value      = metrics.youtube?.subs     || '';
+    $('#statYtViews').value     = metrics.youtube?.views    || '';
+    $('#statIgFollowers').value = metrics.instagram?.followers || '';
+    $('#statIgReach').value     = metrics.instagram?.reach     || '';
+  }
 }
 
 // ---------- WIRING ----------
@@ -3268,6 +3277,17 @@ $('#saveProfile')?.addEventListener('click', async () => {
   await API.saveProfile(profile);
   toast('Profile saved');
   loadSettings();
+});
+
+$('#saveStats')?.addEventListener('click', async () => {
+  const m = {
+    tiktok:    { followers: parseInt($('#statTtFollowers').value) || 0, views: parseInt($('#statTtViews').value) || 0 },
+    youtube:   { subs: parseInt($('#statYtSubs').value) || 0, views: parseInt($('#statYtViews').value) || 0 },
+    instagram: { followers: parseInt($('#statIgFollowers').value) || 0, reach: parseInt($('#statIgReach').value) || 0 }
+  };
+  await API.saveMetrics(m);
+  toast('Stats saved — dashboard updated');
+  loadOverview();
 });
 
 $('#calPrev')?.addEventListener('click', () => {

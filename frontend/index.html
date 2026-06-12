@@ -1140,6 +1140,45 @@
           <button class="btn-pill primary" id="saveProfile"><i class="lucide-save"></i> Save profile</button>
         </div>
       </div>
+      <div class="card big-card">
+        <div class="big-head">
+          <h3 class="card-title">Platform stats — cập nhật thủ công</h3>
+          <span class="card-eyebrow">Nhập số thật của bạn → hiện trên dashboard. Không cần backend.</span>
+        </div>
+        <div class="form">
+          <div class="form-row" style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+            <div>
+              <label><i class="lucide-music tt"></i> TikTok followers</label>
+              <input type="number" id="statTtFollowers" placeholder="e.g. 8000" min="0" />
+            </div>
+            <div>
+              <label>TikTok views (30d)</label>
+              <input type="number" id="statTtViews" placeholder="e.g. 200000" min="0" />
+            </div>
+          </div>
+          <div class="form-row" style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+            <div>
+              <label><i class="lucide-youtube yt"></i> YouTube subscribers</label>
+              <input type="number" id="statYtSubs" placeholder="e.g. 5000" min="0" />
+            </div>
+            <div>
+              <label>YouTube views (30d)</label>
+              <input type="number" id="statYtViews" placeholder="e.g. 100000" min="0" />
+            </div>
+          </div>
+          <div class="form-row" style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+            <div>
+              <label><i class="lucide-instagram ig"></i> Instagram followers</label>
+              <input type="number" id="statIgFollowers" placeholder="e.g. 3000" min="0" />
+            </div>
+            <div>
+              <label>Instagram reach (30d)</label>
+              <input type="number" id="statIgReach" placeholder="e.g. 50000" min="0" />
+            </div>
+          </div>
+          <button class="btn-pill primary" id="saveStats"><i class="lucide-save"></i> Lưu stats</button>
+        </div>
+      </div>
     </section>
 
   </main>
@@ -1159,9 +1198,9 @@
   <div class="toast" id="toast"></div>
 
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-  <script src="config.js?v=33"></script>
-  <script src="icons.js?v=33"></script>
-  <script src="api.js?v=33"></script>
-  <script src="app.js?v=33"></script>
+  <script src="config.js?v=34"></script>
+  <script src="icons.js?v=34"></script>
+  <script src="api.js?v=34"></script>
+  <script src="app.js?v=34"></script>
 </body>
 </html>

@@ -14,10 +14,10 @@ const mockState = {
   profile: { name: 'ANG Coaching', niche: 'AI agency · Personal brand', audience: 'Founders 22–35', goal: '500 leads · $25K rev' },
   connections: { youtube: true, tiktok: true, instagram: false },
   metrics: {
-    youtube:   { views: 1160000, subs: 84210, ctr: 8.4, watchHours: 4210, delta: 22.5 },
-    tiktok:    { views:  872000, followers: 96810, engage: 11.2, avgWatch: 2.1, delta: 34.8 },
-    instagram: { reach:  386000, followers: 41821, engage: 6.5, saves: 72, delta: -4.2 },
-    revenue:   { value: 8420, cpl: 1.92, ltv: 1820, roas: 7.4, delta: 12 }
+    youtube:   { views: 0, subs: 0, ctr: 0, watchHours: 0, delta: 0 },
+    tiktok:    { views: 0, followers: 0, engage: 0, avgWatch: 0, delta: 0 },
+    instagram: { reach: 0, followers: 0, engage: 0, saves: 0, delta: 0 },
+    revenue:   { value: 0, cpl: 0, ltv: 0, roas: 0, delta: 0 }
   },
   funnel: { views: 2418902, engaged: 1742000, clicks: 918000, leads: 312, customers: 47 },
   videos: [
@@ -226,6 +226,30 @@ class LocalDB {
     this._set('content_plan', updated);
     return updated.find(p => p.id === id);
   }
+
+  // ---- Metrics ----
+  _defaultMetrics() {
+    return {
+      youtube:   { views: 0, subs: 0, ctr: 0, watchHours: 0, delta: 0 },
+      tiktok:    { views: 0, followers: 0, engage: 0, avgWatch: 0, delta: 0 },
+      instagram: { reach: 0, followers: 0, engage: 0, saves: 0, delta: 0 },
+      revenue:   { value: 0, cpl: 0, ltv: 0, roas: 0, delta: 0 }
+    };
+  }
+  getMetrics() {
+    return this._get('metrics') || this._defaultMetrics();
+  }
+  saveMetrics(patch) {
+    const cur = this.getMetrics();
+    const merged = { ...cur };
+    for (const k of Object.keys(patch)) {
+      merged[k] = typeof patch[k] === 'object' && patch[k] !== null
+        ? { ...(cur[k] || {}), ...patch[k] }
+        : patch[k];
+    }
+    this._set('metrics', merged);
+    return merged;
+  }
 }
 
 const ldb = new LocalDB();
@@ -279,14 +303,21 @@ const API = {
   authUrl(platform)     { return `${API_BASE}/auth/${platform}/start`; },
 
   async metrics(range=30) {
+    if (!await backendAvailable()) return ldb.getMetrics();
     const r = await safeFetch('/metrics?range=' + range);
-    // Merge real metrics over mock, so connected platforms show real data and others show mock
-    if (!hasData(r)) return mockState.metrics;
-    const merged = JSON.parse(JSON.stringify(mockState.metrics));
+    if (!hasData(r)) return ldb.getMetrics();
+    // Merge real backend data over locally-stored baseline
+    const base = ldb.getMetrics();
+    const merged = JSON.parse(JSON.stringify(base));
     for (const k of Object.keys(merged)) {
       if (r[k] && Object.values(r[k]).some(v => v > 0)) merged[k] = { ...merged[k], ...r[k] };
     }
     return merged;
+  },
+  async saveMetrics(m) {
+    if (!await backendAvailable()) return ldb.saveMetrics(m);
+    const r = await safeFetch('/metrics', { method:'PUT', headers:{'Content-Type':'application/json'}, body: JSON.stringify(m) });
+    return ldb.saveMetrics(m); // always persist locally too
   },
   async funnel(range=30)  { return pick(await safeFetch('/funnel?range=' + range), mockState.funnel); },
   async videos(filter={}) {
