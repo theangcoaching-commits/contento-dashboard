@@ -83,6 +83,168 @@ const mockState = {
   }
 })();
 
+// ====== LOCAL-STORAGE DATABASE (used when backend is unreachable) ======
+class LocalDB {
+  _key(k) { return 'cdb_' + k; }
+  _get(k)  { try { return JSON.parse(localStorage.getItem(this._key(k))); } catch { return null; } }
+  _set(k, v) { localStorage.setItem(this._key(k), JSON.stringify(v)); }
+  uid(p) { return (p || 'x') + '_' + Math.random().toString(36).slice(2, 10); }
+  now() { return new Date().toISOString(); }
+
+  // ---- Series ----
+  listSeries(platform) {
+    const s = this._get('series') || [];
+    return platform ? s.filter(x => x.platform === platform) : s;
+  }
+  createSeries(s) {
+    const all = this._get('series') || [];
+    const item = { ...s, id: this.uid('sr'), created_at: this.now(), updated_at: this.now() };
+    all.push(item);
+    this._set('series', all);
+    return item;
+  }
+  updateSeries(id, patch) {
+    const all = this._get('series') || [];
+    const i = all.findIndex(x => x.id === id);
+    if (i < 0) return null;
+    all[i] = { ...all[i], ...patch, updated_at: this.now() };
+    this._set('series', all);
+    return all[i];
+  }
+  deleteSeries(id) {
+    this._set('series', (this._get('series') || []).filter(x => x.id !== id));
+    return { ok: true };
+  }
+  materializeAllSeries() {
+    const all = (this._get('series') || []).filter(s => s.status === 'active');
+    let plan = this._get('content_plan') || [];
+    let totalAdded = 0;
+    const summary = [];
+    for (const s of all) {
+      plan = plan.filter(p => p.series_id !== s.id);
+      const items = this._expandSeries(s);
+      plan.push(...items);
+      totalAdded += items.length;
+      summary.push({ id: s.id, name: s.name, added: items.length });
+    }
+    this._set('content_plan', plan);
+    return { ok: true, series: summary, total_posts: totalAdded };
+  }
+  _expandSeries(s) {
+    const weekdays = Array.isArray(s.weekdays) ? s.weekdays : JSON.parse(s.weekdays || '[]');
+    const dateStr = s.start_date || new Date().toISOString().slice(0, 10);
+    const [sy, sm, sd] = dateStr.split('-').map(Number);
+    const startMs = Date.UTC(sy, sm - 1, sd);
+    const weeks = Math.max(1, Number(s.repeat_weeks || 4));
+    const endMs = startMs + (weeks * 7 - 1) * 86400000;
+    const rgId = this.uid('rg');
+    const now = this.now();
+    const items = [];
+    for (let ms = startMs; ms <= endMs; ms += 86400000) {
+      const cur = new Date(ms);
+      if (weekdays.includes(cur.getUTCDay())) {
+        items.push({
+          id: this.uid('cp'), date: cur.toISOString().slice(0, 10),
+          time: s.post_time || '20:00', platform: s.platform || 'tiktok',
+          format: s.format || '', title: s.name, hook: '', outline: '[]',
+          script: '', cta: '', target_views: 0, target_leads: 0,
+          status: 'idea', week_idx: null, repeat_group_id: rgId,
+          repeat_rule: 'series', campaign_id: null, series_id: s.id,
+          created_at: now, updated_at: now
+        });
+      }
+    }
+    return items;
+  }
+
+  // ---- Content Plan ----
+  getContentPlan({ from, to } = {}) {
+    let plan = this._get('content_plan') || [];
+    if (from) plan = plan.filter(p => p.date >= from);
+    if (to)   plan = plan.filter(p => p.date <= to);
+    plan = this._attachEpNumbers(plan);
+    const map = {};
+    for (const it of plan) { if (!map[it.date]) map[it.date] = []; map[it.date].push(it); }
+    return map;
+  }
+  _attachEpNumbers(rows) {
+    const ids = [...new Set(rows.filter(r => r.series_id).map(r => r.series_id))];
+    if (!ids.length) return rows;
+    const all = this._get('content_plan') || [];
+    const epIdx = {};
+    for (const sid of ids) {
+      all.filter(p => p.series_id === sid)
+        .sort((a, b) => (a.date + (a.time || '')).localeCompare(b.date + (b.time || '')))
+        .forEach((it, i) => { epIdx[it.id] = i + 1; });
+    }
+    return rows.map(r => ({ ...r, ep_number: r.series_id ? (epIdx[r.id] ?? null) : null }));
+  }
+  updateContentPlan(id, patch) {
+    const plan = this._get('content_plan') || [];
+    const i = plan.findIndex(p => p.id === id);
+    if (i < 0) return null;
+    plan[i] = { ...plan[i], ...patch, updated_at: this.now() };
+    this._set('content_plan', plan);
+    return plan[i];
+  }
+  addContentPlan(item) {
+    const plan = this._get('content_plan') || [];
+    const it = { ...item, id: item.id || this.uid('cp'), created_at: this.now(), updated_at: this.now() };
+    plan.push(it);
+    this._set('content_plan', plan);
+    return it;
+  }
+  deleteContentPlan(id) {
+    this._set('content_plan', (this._get('content_plan') || []).filter(p => p.id !== id));
+    return { ok: true };
+  }
+  deleteContentPlanScoped(id, scope = 'this') {
+    const plan = this._get('content_plan') || [];
+    const item = plan.find(p => p.id === id);
+    if (!item) return { ok: true };
+    let filtered;
+    if (scope === 'future' && item.repeat_group_id)
+      filtered = plan.filter(p => !(p.repeat_group_id === item.repeat_group_id && p.date >= item.date));
+    else if (scope === 'all' && item.repeat_group_id)
+      filtered = plan.filter(p => p.repeat_group_id !== item.repeat_group_id);
+    else
+      filtered = plan.filter(p => p.id !== id);
+    this._set('content_plan', filtered);
+    return { ok: true };
+  }
+  updateContentPlanScoped(id, patch, scope = 'this') {
+    const plan = this._get('content_plan') || [];
+    const item = plan.find(p => p.id === id);
+    if (!item) return null;
+    let updated;
+    if (scope === 'future' && item.repeat_group_id)
+      updated = plan.map(p => (p.repeat_group_id === item.repeat_group_id && p.date >= item.date) ? { ...p, ...patch, updated_at: this.now() } : p);
+    else if (scope === 'all' && item.repeat_group_id)
+      updated = plan.map(p => p.repeat_group_id === item.repeat_group_id ? { ...p, ...patch, updated_at: this.now() } : p);
+    else
+      updated = plan.map(p => p.id === id ? { ...p, ...patch, updated_at: this.now() } : p);
+    this._set('content_plan', updated);
+    return updated.find(p => p.id === id);
+  }
+}
+
+const ldb = new LocalDB();
+
+// Check backend availability once at startup (3s timeout)
+let _backendAvail = null;
+async function backendAvailable() {
+  if (_backendAvail !== null) return _backendAvail;
+  try {
+    const ctrl = new AbortController();
+    setTimeout(() => ctrl.abort(), 3000);
+    const r = await fetch(API_BASE + '/health', { signal: ctrl.signal });
+    _backendAvail = r.ok;
+  } catch {
+    _backendAvail = false;
+  }
+  return _backendAvail;
+}
+
 async function safeFetch(path, opts = {}) {
   try {
     const res = await fetch(API_BASE + path, opts);
@@ -196,44 +358,43 @@ const API = {
 
   // Content Series
   async listSeries(platform) {
+    if (!await backendAvailable()) return ldb.listSeries(platform);
     const q = platform ? ('?platform=' + platform) : '';
     return (await safeFetch('/series' + q)) || [];
   },
   async createSeries(s) {
-    return await safeFetch('/series', {
-      method:'POST', headers:{'Content-Type':'application/json'},
-      body: JSON.stringify(s)
-    });
+    if (!await backendAvailable()) return ldb.createSeries(s);
+    return await safeFetch('/series', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(s) });
   },
   async updateSeries(id, patch) {
-    return await safeFetch('/series/' + id, {
-      method:'PUT', headers:{'Content-Type':'application/json'},
-      body: JSON.stringify(patch)
-    });
+    if (!await backendAvailable()) return ldb.updateSeries(id, patch);
+    return await safeFetch('/series/' + id, { method:'PUT', headers:{'Content-Type':'application/json'}, body: JSON.stringify(patch) });
   },
   async deleteSeries(id) {
+    if (!await backendAvailable()) return ldb.deleteSeries(id);
     return await safeFetch('/series/' + id, { method:'DELETE' });
   },
   async materializeAllSeries() {
+    if (!await backendAvailable()) return ldb.materializeAllSeries();
     return await safeFetch('/series/materialize-all', { method:'POST' });
   },
   async getContentPlan(query={}) {
+    if (!await backendAvailable()) return ldb.getContentPlan(query);
     const q = new URLSearchParams(query).toString();
     return (await safeFetch('/content-plan?' + q)) || {};
   },
   async updateContentPlan(id, patch) {
-    return await safeFetch('/content-plan/' + id, {
-      method:'PUT', headers:{'Content-Type':'application/json'},
-      body: JSON.stringify(patch)
-    });
+    if (!await backendAvailable()) return ldb.updateContentPlan(id, patch);
+    return await safeFetch('/content-plan/' + id, { method:'PUT', headers:{'Content-Type':'application/json'}, body: JSON.stringify(patch) });
   },
   async addContentPlan(item) {
-    return await safeFetch('/content-plan', {
-      method:'POST', headers:{'Content-Type':'application/json'},
-      body: JSON.stringify(item)
-    });
+    if (!await backendAvailable()) return ldb.addContentPlan(item);
+    return await safeFetch('/content-plan', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(item) });
   },
-  async deleteContentPlan(id) { return await safeFetch('/content-plan/' + id, { method:'DELETE' }); },
+  async deleteContentPlan(id) {
+    if (!await backendAvailable()) return ldb.deleteContentPlan(id);
+    return await safeFetch('/content-plan/' + id, { method:'DELETE' });
+  },
 
   // Script generation (AI)
   async generateScript(planId) {
@@ -288,12 +449,11 @@ const API = {
   // ---------- CONTENT PLAN (scoped edit/delete + single fetch) ----------
   async getContentPlanItem(id)          { return await safeFetch('/content-plan/' + id); },
   async updateContentPlanScoped(id, patch, scope='this') {
-    return await safeFetch(`/content-plan/${id}?scope=${scope}`, {
-      method: 'PUT', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(patch)
-    });
+    if (!await backendAvailable()) return ldb.updateContentPlanScoped(id, patch, scope);
+    return await safeFetch(`/content-plan/${id}?scope=${scope}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(patch) });
   },
   async deleteContentPlanScoped(id, scope='this') {
+    if (!await backendAvailable()) return ldb.deleteContentPlanScoped(id, scope);
     return await safeFetch(`/content-plan/${id}?scope=${scope}`, { method: 'DELETE' });
   },
 
