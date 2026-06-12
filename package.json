@@ -10,7 +10,7 @@
     "sync": "node backend/scripts/sync-once.js"
   },
   "engines": {
-    "node": ">=18"
+    "node": ">=22"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.27.3",
